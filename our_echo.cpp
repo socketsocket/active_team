@@ -52,10 +52,11 @@ int	main(int argc, char const *argv[])
 	clnt_sock = accept(serv_sock, reinterpret_cast<struct sockaddr *>(&clnt_addr), &clnt_addr_size);
 	if (clnt_sock == -1)
 			error_handling("accept error");
+
+	// https://man7.org/linux/man-pages/man2/select.2.html
     while (1)
     {
-        int len;
-        len = read(clnt_sock, buffer, BUFFERSIZE);
+        int len = read(clnt_sock, buffer, BUFFERSIZE);
 		if (len == -1)
 			error_handling("read error");
         buffer[len] = '\0';
@@ -65,9 +66,11 @@ int	main(int argc, char const *argv[])
 		// 	break ;
     }
 	close(clnt_sock); // while 안에 넣으면 안됨
-
 	close(serv_sock);
+
+
 	return (0);
 }
+
 
 // https://man7.org/linux/man-pages/man2/socket.2.html

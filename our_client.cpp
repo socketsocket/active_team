@@ -35,11 +35,11 @@ int main(int argc, char const *argv[])
 	}
 
 	char buffer[BUFFERSIZE];
-	int len;
-	int	ret;
+	int len, ret;
 	while(1)
 	{
-		fgets(buffer, BUFFERSIZE, stdin);
+		std::cin >> buffer;
+		// fgets(buffer, BUFFERSIZE, stdin);
         buffer[strlen(buffer)] = '\0';
 		ret = write(clnt_sock, buffer, strlen(buffer) + 1);
 		if (ret == -1)
@@ -54,6 +54,7 @@ int main(int argc, char const *argv[])
 			error_handling("read error");
 		}
 		buffer[len] = '\0';
+
 		std::cout << "clnt_sock: " << clnt_sock << '\n';
 		std::cout << "server: " << buffer;
 	}
