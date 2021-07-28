@@ -7,10 +7,11 @@
 class Request
 {
 private:
+	int status;
 	std::string method;
 	std::string uri;
 	std::string http_version;
-	std::map<std::string, std::string> heards;  // 헤더 중복 허용 안함, 중복시 400 Bad Request, Connection: close
+	std::map<std::string, std::string> headers;  // 헤더 중복 허용 안함, 중복시 400 Bad Request, Connection: close
 	std::string body;
 
 public:
