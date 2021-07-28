@@ -1,17 +1,26 @@
 #ifndef RAWREQUESTREADER_HPP
 # define RAWREQUESTREADER_HPP
 
-#include <string>
+# include <string>
+
+# include "Request.hpp"
 
 class RawRequestReader
 {
-    friend class Client;
-    private:
-        std::string raw_request;
-        // Request request;
-    public:
-        void read_startHead();
-        void read_body();
+private:
+	std::string raw_request;
+	Request 	request;
+	int			status;
+
+	friend class Client;
+public:
+	RawRequestReader();
+	void	readStartHead();
+	void	readBody();
+	int		readRequest();
+    
+    //getter
+    std::string     getRawRequest();
 };
 
 #endif
