@@ -263,6 +263,14 @@ int	ServerManager::monitorEvent()
 
 		change_list.clear();
 
+		// 6
+		// 6q 6q 6q 6q 6q
+		//    6q 6q 6q 6q
+		//    6q
+
+		// 6q -> client ->req complete->serverManager->server->location -> ".html" "read"
+
+
 		for (int i = 0; i < num_events; ++i)
 		{
 			curr_event = &event_list[i];
@@ -316,11 +324,12 @@ int	ServerManager::monitorEvent()
 						buffer[n] = '\0';
 						client_data[curr_event->ident] += buffer;
 					}
+					raw_request 호출
 				}
 			}
 			else if (curr_event->filter == EVFILT_WRITE)
 			{
-				if (client_data[curr_event->ident].length() > 0)
+				if (//client.getStatus == "RESPONSE_COMPLETE")
 				{
 					int	n;
 					if((n = write(curr_event->ident, client_data[curr_event->ident].c_str(), client_data[curr_event->ident].length())) == -1)
