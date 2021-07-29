@@ -26,7 +26,8 @@ int main(int argc, char const *argv[])
 	struct sockaddr_in	server_addr;
 
 	if ((server_socket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-		exit_with_perror("socket error\n" + std::string(strerror(errno)));
+		exit_with_perror("socket error\n");
+
 	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -69,7 +70,13 @@ int main(int argc, char const *argv[])
 	while (true)
 	{
 		num_events = kevent(kq, &change_list[0], change_list.size(), event_list, EVENTSIZE, NULL);
-							//vec는 컨테이너, 포인터를 넣어야해서 타입을 맞춰주기 위함!
+			// vec는 컨테이너, 포인터를 넣어야해서 타입을 맞춰주기 위함!
+			// 발생한 이벤트가 event_list로
+			// changelist는 kevent 구조체의 배열로, changelist 배열에 저장된 kevent 구조체(이벤트)들은 kqueue에 등록된다.
+			// nchanges는 등록할 이벤트의 개수이다.
+			// kevent는 ident와 filter를 식별자로 삼는다. 이를 통해 kevent의 중복 등록을 막고,
+			// 해당 이벤트 발생 조건이 부합하지 않을 경우(파일 디스크립터가 close 될 경우 등)에는 kqueue에서 삭제되어 최소한의 kevent만 남아있을 수 있도록 관리된다.
+			// https://hyeonski.tistory.com/9
 		if (num_events == -1)
 			exit_with_perror("kevent error");
 

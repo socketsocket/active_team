@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
 		buffer[len] = '\0';
 
 		std::cout << "clnt_sock: " << clnt_sock << '\n';
-		std::cout << "server: " << buffer;
+		std::cout << "server: " << buffer << std::endl;;
 	}
 	std::cout << "closing client";
 	close(clnt_sock);
