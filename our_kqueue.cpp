@@ -136,6 +136,15 @@ int main(int argc, char const *argv[])
 					{
 						buffer[n] = '\0';
 						client_data[curr_event->ident] += buffer;
+						// 
+						// client[curr_evnet->ident].readRequest : 일단 raw_request 에 다 담는거
+						// client.makeRequest() -> client_status : REQUEST_COMPLETE
+						// if , -> makeResponse
+						// 로케이션 참조해가지고 읽어와야할 그게 필요하게 됨 -> server 이거를 지금 kqeueu 에 ?
+						// 그건 그 때 그 EV_SET 거기서 사용해서 kqueue에 올리고
+						// resource_fd 생김~!
+						// RESPONE_COMPLETE
+						// write 
 					}
 				}
 			}
