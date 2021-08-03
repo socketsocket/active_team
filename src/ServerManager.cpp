@@ -114,7 +114,19 @@ Server
 		}
 		else if (word == "return")
 		{
-			
+			int			code = std::stoul(pop_front(config_deque));
+			std::string	uri = pop_front(config_deque);
+
+			if (uri == ";")
+				std::cout << "code = " << code << std::endl;
+				// serv->setReturnInfo(code, "");
+			else
+			{
+				std::cout << "code = " << code << "uri = " << uri << std::endl;
+				// serv->setReturnInfo(code, uri);
+				if (config_deque->front() != ";")
+					throw ServerManager::parseException("Location Parsing Error : no exist ';'");
+			}
 		}
 		else
 			throw ServerManager::parseException(word + ": unexcepted direction");
@@ -129,7 +141,7 @@ Server
 	// for (; ports.empty() == false; ports.pop())
 		// this->uri_to_server.insert(make_pair(make_pair(server_name, ports.front()), serv));
 	// return (serv);
-	return (0);
+	return (0); // 파싱 테스트용
 }
 
 Location
@@ -188,9 +200,23 @@ Location
 		{
 			// loc.addCGI(pop_front(config_deque), pop_front(config_deque));
 			std::cout << "cgi_info = " << pop_front(config_deque) << ", " << pop_front(config_deque) << std::endl;
-		} 
+		}
 		else if (word == "return")
-			std::cout << "return = " << pop_front(config_deque) << std::endl;
+		{
+			int			code = std::stoul(pop_front(config_deque));
+			std::string	uri = pop_front(config_deque);
+
+			if (uri == ";")
+				std::cout << "code = " << code << std::endl;
+				// serv->setReturnInfo(code, "");
+			else
+			{
+				std::cout << "code = " << code << "uri = " << uri << std::endl;
+				// serv->setReturnInfo(code, uri);
+				if (config_deque->front() != ";")
+					throw ServerManager::parseException("Location Parsing Error : no exist ';'");
+			}
+		}
 		else
 			throw ServerManager::parseException(word + ": unexcepted direction");
 
@@ -264,110 +290,109 @@ int	ServerManager::openPort()
 
 		print_open_status(itr->first.first, port);
 	}
-	return (0);
 }
 
-// void
-// 	ServerManager::deleteClient(int client_socket)
-// {
-// 	delete client_socket_to_client.find(client_socket)->second;
-// 	client_socket_to_client.erase(client_socket);
-// }
+void
+	ServerManager::deleteClient(int client_socket)
+{
+	delete client_socket_to_client.find(client_socket)->second;
+	client_socket_to_client.erase(client_socket);
+}
 
 
-// int	ServerManager::monitorEvent()
-// {
-// 	int							num_events;
-// 	struct kevent				*curr_event;
-// 	std::vector<struct kevent>	change_list;
-// 	struct kevent				event_list[EVENTSIZE];
-// 	struct kevent				temp_event;           // client read/write 등록용
+int	ServerManager::monitorEvent()
+{
+	int							num_events;
+	struct kevent				*curr_event;
+	std::vector<struct kevent>	change_list;
+	struct kevent				event_list[EVENTSIZE];
+	struct kevent				temp_event;           // client read/write 등록용
 
-// 	while (true)
-// 	{
-// 		// if (change_list.size() == 0)
-// 		// 	num_events = kevent(kq, NULL, 0, event_list, EVENTSIZE, NULL);
-// 		// else
-// 		num_events = kevent(kq, &change_list[0], change_list.size(), event_list, EVENTSIZE, NULL);
-// 		if (num_events == -1)
-// 			return (perror("kevent error"), 1);
+	while (true)
+	{
+		// if (change_list.size() == 0)
+		// 	num_events = kevent(kq, NULL, 0, event_list, EVENTSIZE, NULL);
+		// else
+		num_events = kevent(kq, &change_list[0], change_list.size(), event_list, EVENTSIZE, NULL);
+		if (num_events == -1)
+			return (perror("kevent error"), 1);
 
-// 		change_list.clear();
+		change_list.clear();
 
-// 		// 6
-// 		// 6q 6q 6q 6q 6q
-// 		//    6q 6q 6q 6q
-// 		//    6q
+		// 6
+		// 6q 6q 6q 6q 6q
+		//    6q 6q 6q 6q
+		//    6q
 
-// 		// 6q -> client ->req complete->serverManager->server->location -> ".html" "read"
+		// 6q -> client ->req complete->serverManager->server->location -> ".html" "read"
 
-// 		for (int i = 0; i < num_events; ++i)
-// 		{
-// 			curr_event = &event_list[i];
-// 			if (curr_event->flags & EV_ERROR)
-// 			{
-// 				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
-// 					return (perror("server socket error"), 1);
-// 				else
-// 				{
-// 					deleteClient(curr_event->ident);
-// 					return (perror("client socket error"), 1);
-// 				}
-// 			}
-// 			else if (curr_event->filter == EVFILT_READ)
-// 			{
-// 				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
-// 				{
-// 					//이거 포인터임 주의
-// 					Client *client = new Client(curr_event->ident, server_socket_to_port.find(curr_event->ident)->second);
+		for (int i = 0; i < num_events; ++i)
+		{
+			curr_event = &event_list[i];
+			if (curr_event->flags & EV_ERROR)
+			{
+				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
+					return (perror("server socket error"), 1);
+				else
+				{
+					deleteClient(curr_event->ident);
+					return (perror("client socket error"), 1);
+				}
+			}
+			else if (curr_event->filter == EVFILT_READ)
+			{
+				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
+				{
+					//이거 포인터임 주의
+					Client *client = new Client(curr_event->ident, server_socket_to_port.find(curr_event->ident)->second);
 
-// 					client_socket_to_client.insert(std::make_pair(client->getSocketFD(), client));
+					client_socket_to_client.insert(std::make_pair(client->getSocketFD(), client));
 
-// 					EV_SET(&temp_event, client->getSocketFD(), EVFILT_READ, EV_ADD, 0, 0, NULL);
-// 					change_list.push_back(temp_event);
-// 					EV_SET(&temp_event, client->getSocketFD(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-// 					// EVFILT_WRITE: Takes a file descriptor as the identifier, and returns whenever it is possible to write to the descriptor.
-// 					change_list.push_back(temp_event);
-// 				}
-// 				else if (client_data.find(curr_event->ident) != client_data.end())
-// 				{
-// 					// 클라이언트가 요청을 처리
-// 					//  RawRequestReader를 통해
-// 					//클라이언트에게 알려줘서 RawRequestReader 를 불러서 처리!
-// 					char	buffer[1024];
-// 					int		n;
+					EV_SET(&temp_event, client->getSocketFD(), EVFILT_READ, EV_ADD, 0, 0, NULL);
+					change_list.push_back(temp_event);
+					EV_SET(&temp_event, client->getSocketFD(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+					// EVFILT_WRITE: Takes a file descriptor as the identifier, and returns whenever it is possible to write to the descriptor.
+					change_list.push_back(temp_event);
+				}
+				else if (client_data.find(curr_event->ident) != client_data.end())
+				{
+					// 클라이언트가 요청을 처리
+					//  RawRequestReader를 통해
+					//클라이언트에게 알려줘서 RawRequestReader 를 불러서 처리!
+					char	buffer[1024];
+					int		n;
 
-// 					n = read(curr_event->ident, buffer, sizeof(buffer) - 1);
-// 					if (n == -1)
-// 					{
-// 						std::cerr << "read error" << std::endl;
-// 						continue;
-// 					}
-// 					else if (n == 0)
-// 					{
-// 						std::cout << "client disconnected" << std::endl;
-// 						client_data.erase(curr_event->ident);
-// 						close(curr_event->ident);
-// 					}
-// 					else
-// 					{
-// 						buffer[n] = '\0';
-// 						client_data[curr_event->ident] += buffer;
-// 					}
-// 					raw_request 호출
-// 				}
-// 			}
-// 			else if (curr_event->filter == EVFILT_WRITE)
-// 			{
-// 				if (//client.getStatus == "RESPONSE_COMPLETE")
-// 				{
-// 					int	n;
-// 					if((n = write(curr_event->ident, client_data[curr_event->ident].c_str(), client_data[curr_event->ident].length())) == -1)
-// 						std::cerr << "write error" << '\n';
-// 					client_data[curr_event->ident].clear();
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return (0);
-// }
+					n = read(curr_event->ident, buffer, sizeof(buffer) - 1);
+					if (n == -1)
+					{
+						std::cerr << "read error" << std::endl;
+						continue;
+					}
+					else if (n == 0)
+					{
+						std::cout << "client disconnected" << std::endl;
+						client_data.erase(curr_event->ident);
+						close(curr_event->ident);
+					}
+					else
+					{
+						buffer[n] = '\0';
+						client_data[curr_event->ident] += buffer;
+					}
+					raw_request 호출
+				}
+			}
+			else if (curr_event->filter == EVFILT_WRITE)
+			{
+				if (//client.getStatus == "RESPONSE_COMPLETE")
+				{
+					int	n;
+					if((n = write(curr_event->ident, client_data[curr_event->ident].c_str(), client_data[curr_event->ident].length())) == -1)
+						std::cerr << "write error" << '\n';
+					client_data[curr_event->ident].clear();
+				}
+			}
+		}
+	}
+	return (0);
+}

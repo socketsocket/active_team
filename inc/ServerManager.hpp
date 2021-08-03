@@ -34,6 +34,7 @@ private:
 	std::map<int, int>		server_socket_to_port; // serv_socket_fd -> port
 	std::map<int, Client *>	client_socket_to_client; // erase 할 때 별도의 delete Client 필수
 	int						kq;
+	std::map<unsigned int, std::string>	default_server;
 
 	ServerManager() {}
 

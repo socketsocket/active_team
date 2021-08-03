@@ -15,6 +15,7 @@ private:
 	std::map<int, std::string>		error_page;
 	bool							auto_index;
 	unsigned long					body_limit; // 0 ~ string::max_size(), default: string::max_size()
+	std::pair<int, std::string>		return_info;
 
 public:
 	Server();
@@ -29,6 +30,7 @@ public:
 
 	int			setBodyLimit(unsigned long limit);
 	int			setAutoindex(std::string auto_index);
+	int			setReturnInfo(int code, std::string uri);
 };
 
 #endif
