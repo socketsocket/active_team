@@ -1,5 +1,3 @@
-
-
 #include "webserv.hpp"
 
 static std::string
@@ -17,8 +15,8 @@ template <typename InputIt>
 static void
 	string_tolower(InputIt first, InputIt last)
 {
-	for (InputIt itr = first; itr != last; itr++)
-		*first = std::tolower(*first);
+	for (InputIt itr = first; itr != last; ++itr)
+		*itr= std::tolower(*itr);
 }
 
 ServerManager::ServerManager(std::string config_path)
@@ -56,7 +54,7 @@ ServerManager::ServerManager(std::string config_path)
 Server
 	*ServerManager::parseServer(std::deque<std::string> *config_deque)
 {
-	Server	*serv = new Server();
+	// Server	*serv = new Server();
 
 	std::string					server_name = "";
 	std::queue<unsigned int>	ports;
@@ -68,38 +66,55 @@ Server
 	while ((word = pop_front(config_deque)) != "}")
 	{
 		if (word == "listen")
-			ports.push(std::stoul(pop_front(config_deque)));
+			std::cout << "client_body_limit = " << std::stoul(pop_front(config_deque)) << std::endl;
+			// ports.push(std::stoul(pop_front(config_deque)));
 		else if (word == "server_name")
-			server_name = pop_front(config_deque);
+			std::cout << "server_name = " << pop_front(config_deque) << std::endl;
+			// server_name = pop_front(config_deque);
 		else if (word == "client_body_limit")
 		{
+			std::cout << "client_body_limit = " << std::stoul(pop_front(config_deque)) << std::endl;
+
 			if (exist_body_limit == true)
 				throw ServerManager::parseException("Server Parsing Error: double client_body_limit input");
 			exist_body_limit = true;
-			serv->setBodyLimit(std::stoul(pop_front(config_deque)));
+			// serv->setBodyLimit(std::stoul(pop_front(config_deque)));
 		}
 		else if (word == "auto_index")
 		{
+			std::cout << "auto_index = " << pop_front(config_deque) << std::endl;
+			
 			if (exist_auto_index == true)
 				throw ServerManager::parseException("Server Parsing Error: double auto_index input");
 			exist_auto_index = true;
-			serv->setAutoindex(pop_front(config_deque));
+			// serv->setAutoindex(pop_front(config_deque));
 		}
 		else if (word == "error_page")
 		{
-			int			error_code = std::stoi(pop_front(config_deque));
-			std::string	error_page = pop_front(config_deque);
+			std::cout << "error_page = " << pop_front(config_deque) << ", " << pop_front(config_deque) << std::endl;
 
-			serv->addErrorPage(error_code, error_page);
+			// int			error_code = std::stoi(pop_front(config_deque));
+			// std::string	error_page = pop_front(config_deque);
+
+			// serv->addErrorPage(error_code, error_page);
 		}
 		else if (word == "location")
 		{
 			std::string	location_path = pop_front(config_deque);
 
-			if (config_deque->front() != "{")
+			std::cout << "location = " << location_path << std::endl;
+
+			// if (config_deque->front() != "{")
+				// throw ServerManager::parseException("Location Parsing Error : no exist '{'");
+			if (pop_front(config_deque) != "{")
 				throw ServerManager::parseException("Location Parsing Error : no exist '{'");
 			else
-				serv->addLocation(location_path, parseLocation(config_deque, location_path));
+				parseLocation(config_deque, location_path);
+				// serv->addLocation(location_path, parseLocation(config_deque, location_path));
+		}
+		else if (word == "return")
+		{
+			
 		}
 		else
 			throw ServerManager::parseException(word + ": unexcepted direction");
@@ -111,9 +126,10 @@ Server
 	if (word != "}")
 		throw ServerManager::parseException("Server Parsing Error : no exist '}");
 
-	for (; ports.empty() == false; ports.pop())
-		this->uri_to_server.insert(make_pair(make_pair(server_name, ports.front()), serv));
-	return (serv);
+	// for (; ports.empty() == false; ports.pop())
+		// this->uri_to_server.insert(make_pair(make_pair(server_name, ports.front()), serv));
+	// return (serv);
+	return (0);
 }
 
 Location
@@ -127,44 +143,58 @@ Location
 	{
 		if (word == "root")
 		{
-			if (loc.setRoot(pop_front(config_deque)) == FAILED)
-				throw ServerManager::parseException("Location Parse Error: double root setting");
+			std::cout << "root = " << pop_front(config_deque) << std::endl;
+			// if (loc.setRoot(pop_front(config_deque)) == FAILED)
+				// throw ServerManager::parseException("Location Parse Error: double root setting");
 		}
 		else if (word == "index")
 		{
-			loc.addIndex(pop_front(config_deque));
+			std::cout << "index = " << pop_front(config_deque) << std::endl;
+			// loc.addIndex(pop_front(config_deque));
 		}
 		else if (word == "auto_index")
 		{
-			if (exist_auto_index == true)
-				throw ServerManager::parseException("Location Parse Error: double autoindex setting");
-			exist_auto_index = true;
-			loc.setAutoindex(pop_front(config_deque));
+			std::cout << "auto_index = " << pop_front(config_deque) << std::endl;
+			// if (exist_auto_index == true)
+				// throw ServerManager::parseException("Location Parse Error: double autoindex setting");
+			// exist_auto_index = true;
+			// loc.setAutoindex(pop_front(config_deque));
 		}
 		else if (word == "error_page")
 		{
-			if (loc.addErrorPage(stoi(pop_front(config_deque)), pop_front(config_deque)) == FAILED)
-				throw ServerManager::parseException("Location Parse Error: invalid error page");
+			std::cout << "error_page = " << pop_front(config_deque) << ", " << pop_front(config_deque) << std::endl;
+			
+			// if (loc.addErrorPage(stoi(pop_front(config_deque)), pop_front(config_deque)) == FAILED)
+				// throw ServerManager::parseException("Location Parse Error: invalid error page");
 		}
 		else if (word == "methods_allowed")
 		{
+			std::cout << "methods_allowed = ";
+
 			std::string	method;
 			while ((method = pop_front(config_deque) ) != ";")
 			{
-				if (method == "GET")
-					loc.addMethod(Request::GET);
-				else if (method == "POST")
-					loc.addMethod(Request::POST);
-				else if (method == "DELETE")
-					loc.addMethod(Request::DELETE);
+				// if (method == "GET")
+					// loc.addMethod(Request::GET);
+				// else if (method == "POST")
+					// loc.addMethod(Request::POST);
+				// else if (method == "DELETE")
+					// loc.addMethod(Request::DELETE);
+				std::cout << method << " ";
 			}
+			std::cout << std::endl;
 		}
 		else if (word == "cgi_info")
-			loc.addCGI(pop_front(config_deque), pop_front(config_deque));
+		{
+			// loc.addCGI(pop_front(config_deque), pop_front(config_deque));
+			std::cout << "cgi_info = " << pop_front(config_deque) << ", " << pop_front(config_deque) << std::endl;
+		} 
+		else if (word == "return")
+			std::cout << "return = " << pop_front(config_deque) << std::endl;
 		else
 			throw ServerManager::parseException(word + ": unexcepted direction");
 
-		if (word != "error_page" && pop_front(config_deque) != ";")
+		if (word != "methods_allowed" && pop_front(config_deque) != ";")
 			throw ServerManager::parseException("Excepted ';'");
 	}
 
@@ -234,110 +264,110 @@ int	ServerManager::openPort()
 
 		print_open_status(itr->first.first, port);
 	}
-}
-
-void
-	ServerManager::deleteClient(int client_socket)
-{
-	delete client_socket_to_client.find(client_socket)->second;
-	client_socket_to_client.erase(client_socket);
-}
-
-
-int	ServerManager::monitorEvent()
-{
-	int							num_events;
-	struct kevent				*curr_event;
-	std::vector<struct kevent>	change_list;
-	struct kevent				event_list[EVENTSIZE];
-	struct kevent				temp_event;           // client read/write 등록용
-
-	while (true)
-	{
-		// if (change_list.size() == 0)
-		// 	num_events = kevent(kq, NULL, 0, event_list, EVENTSIZE, NULL);
-		// else
-		num_events = kevent(kq, &change_list[0], change_list.size(), event_list, EVENTSIZE, NULL);
-		if (num_events == -1)
-			return (perror("kevent error"), 1);
-
-		change_list.clear();
-
-		// 6
-		// 6q 6q 6q 6q 6q
-		//    6q 6q 6q 6q
-		//    6q
-
-		// 6q -> client ->req complete->serverManager->server->location -> ".html" "read"
-
-
-		for (int i = 0; i < num_events; ++i)
-		{
-			curr_event = &event_list[i];
-			if (curr_event->flags & EV_ERROR)
-			{
-				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
-					return (perror("server socket error"), 1);
-				else
-				{
-					deleteClient(curr_event->ident);
-					return (perror("client socket error"), 1);
-				}
-			}
-			else if (curr_event->filter == EVFILT_READ)
-			{
-				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
-				{
-					//이거 포인터임 주의
-					Client *client = new Client(curr_event->ident, server_socket_to_port.find(curr_event->ident)->second);
-
-					client_socket_to_client.insert(std::make_pair(client->getSocketFD(), client));
-
-					EV_SET(&temp_event, client->getSocketFD(), EVFILT_READ, EV_ADD, 0, 0, NULL);
-					change_list.push_back(temp_event);
-					EV_SET(&temp_event, client->getSocketFD(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-					// EVFILT_WRITE: Takes a file descriptor as the identifier, and returns whenever it is possible to write to the descriptor.
-					change_list.push_back(temp_event);
-				}
-				else if (client_data.find(curr_event->ident) != client_data.end())
-				{
-					// 클라이언트가 요청을 처리
-					//  RawRequestReader를 통해
-					//클라이언트에게 알려줘서 RawRequestReader 를 불러서 처리!
-					char	buffer[1024];
-					int		n;
-
-					n = read(curr_event->ident, buffer, sizeof(buffer) - 1);
-					if (n == -1)
-					{
-						std::cerr << "read error" << std::endl;
-						continue;
-					}
-					else if (n == 0)
-					{
-						std::cout << "client disconnected" << std::endl;
-						client_data.erase(curr_event->ident);
-						close(curr_event->ident);
-					}
-					else
-					{
-						buffer[n] = '\0';
-						client_data[curr_event->ident] += buffer;
-					}
-					raw_request 호출
-				}
-			}
-			else if (curr_event->filter == EVFILT_WRITE)
-			{
-				if (//client.getStatus == "RESPONSE_COMPLETE")
-				{
-					int	n;
-					if((n = write(curr_event->ident, client_data[curr_event->ident].c_str(), client_data[curr_event->ident].length())) == -1)
-						std::cerr << "write error" << '\n';
-					client_data[curr_event->ident].clear();
-				}
-			}
-		}
-	}
 	return (0);
 }
+
+// void
+// 	ServerManager::deleteClient(int client_socket)
+// {
+// 	delete client_socket_to_client.find(client_socket)->second;
+// 	client_socket_to_client.erase(client_socket);
+// }
+
+
+// int	ServerManager::monitorEvent()
+// {
+// 	int							num_events;
+// 	struct kevent				*curr_event;
+// 	std::vector<struct kevent>	change_list;
+// 	struct kevent				event_list[EVENTSIZE];
+// 	struct kevent				temp_event;           // client read/write 등록용
+
+// 	while (true)
+// 	{
+// 		// if (change_list.size() == 0)
+// 		// 	num_events = kevent(kq, NULL, 0, event_list, EVENTSIZE, NULL);
+// 		// else
+// 		num_events = kevent(kq, &change_list[0], change_list.size(), event_list, EVENTSIZE, NULL);
+// 		if (num_events == -1)
+// 			return (perror("kevent error"), 1);
+
+// 		change_list.clear();
+
+// 		// 6
+// 		// 6q 6q 6q 6q 6q
+// 		//    6q 6q 6q 6q
+// 		//    6q
+
+// 		// 6q -> client ->req complete->serverManager->server->location -> ".html" "read"
+
+// 		for (int i = 0; i < num_events; ++i)
+// 		{
+// 			curr_event = &event_list[i];
+// 			if (curr_event->flags & EV_ERROR)
+// 			{
+// 				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
+// 					return (perror("server socket error"), 1);
+// 				else
+// 				{
+// 					deleteClient(curr_event->ident);
+// 					return (perror("client socket error"), 1);
+// 				}
+// 			}
+// 			else if (curr_event->filter == EVFILT_READ)
+// 			{
+// 				if (server_socket_to_port.find(curr_event->ident) != server_socket_to_port.end())
+// 				{
+// 					//이거 포인터임 주의
+// 					Client *client = new Client(curr_event->ident, server_socket_to_port.find(curr_event->ident)->second);
+
+// 					client_socket_to_client.insert(std::make_pair(client->getSocketFD(), client));
+
+// 					EV_SET(&temp_event, client->getSocketFD(), EVFILT_READ, EV_ADD, 0, 0, NULL);
+// 					change_list.push_back(temp_event);
+// 					EV_SET(&temp_event, client->getSocketFD(), EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+// 					// EVFILT_WRITE: Takes a file descriptor as the identifier, and returns whenever it is possible to write to the descriptor.
+// 					change_list.push_back(temp_event);
+// 				}
+// 				else if (client_data.find(curr_event->ident) != client_data.end())
+// 				{
+// 					// 클라이언트가 요청을 처리
+// 					//  RawRequestReader를 통해
+// 					//클라이언트에게 알려줘서 RawRequestReader 를 불러서 처리!
+// 					char	buffer[1024];
+// 					int		n;
+
+// 					n = read(curr_event->ident, buffer, sizeof(buffer) - 1);
+// 					if (n == -1)
+// 					{
+// 						std::cerr << "read error" << std::endl;
+// 						continue;
+// 					}
+// 					else if (n == 0)
+// 					{
+// 						std::cout << "client disconnected" << std::endl;
+// 						client_data.erase(curr_event->ident);
+// 						close(curr_event->ident);
+// 					}
+// 					else
+// 					{
+// 						buffer[n] = '\0';
+// 						client_data[curr_event->ident] += buffer;
+// 					}
+// 					raw_request 호출
+// 				}
+// 			}
+// 			else if (curr_event->filter == EVFILT_WRITE)
+// 			{
+// 				if (//client.getStatus == "RESPONSE_COMPLETE")
+// 				{
+// 					int	n;
+// 					if((n = write(curr_event->ident, client_data[curr_event->ident].c_str(), client_data[curr_event->ident].length())) == -1)
+// 						std::cerr << "write error" << '\n';
+// 					client_data[curr_event->ident].clear();
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return (0);
+// }

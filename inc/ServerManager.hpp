@@ -44,7 +44,7 @@ private:
 public:
 	ServerManager(std::string config_path);
 	ServerManager(const ServerManager& other);
-	~ServerManager();
+	~ServerManager() {};
 
 	ServerManager &operator=(const ServerManager& other);
 

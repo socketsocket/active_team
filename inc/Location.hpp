@@ -23,9 +23,9 @@ private:
 	bool								auto_index;
 
 public:
-	Location(std::string path);
+	Location(std::string path) {};
 	Location(const Location& s);
-	~Location();
+	~Location() {};
 
 	Location& operator= (const Location& s);
 
