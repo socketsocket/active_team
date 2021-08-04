@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "ServerManager.hpp"
 
 static std::string
 	pop_front(std::deque<std::string> *config_deque)
@@ -379,12 +379,16 @@ int	ServerManager::monitorEvent()
 						buffer[n] = '\0';
 						client_data[curr_event->ident] += buffer;
 					}
-					raw_request 호출
+					//raw_request 호출
+					if (client.getStatus == REQUREST_COMPLETE)
+					{
+						prepareResponse();
+					}
 				}
 			}
 			else if (curr_event->filter == EVFILT_WRITE)
 			{
-				if (//client.getStatus == "RESPONSE_COMPLETE")
+				if (client.getStatus == "RESPONSE_COMPLETE")
 				{
 					int	n;
 					if((n = write(curr_event->ident, client_data[curr_event->ident].c_str(), client_data[curr_event->ident].length())) == -1)
