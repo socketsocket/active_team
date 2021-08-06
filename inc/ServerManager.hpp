@@ -23,7 +23,16 @@
 # include <fcntl.h>
 # include <exception>
 
+# include "Client.hpp"
 # include "Server.hpp"
+# include "Request.hpp"
+# include "Response.hpp"
+# include "ServerManager.hpp"
+
+# define SUCCESS 1
+# define FAILED  0
+
+# define EVENTSIZE 10
 
 class ServerManager
 {
@@ -70,6 +79,7 @@ public:
 
 	bool parsingServer(std::ifstream config_file);
 	bool makeServer(std::multimap<std::string, std::vector<std::string> > server_info);
+	int ServerManager::prepareResponse(Client &client);	//필요
 
 };
 

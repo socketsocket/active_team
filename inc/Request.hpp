@@ -15,6 +15,13 @@ public:
 
 	Request& operator= (const Request &req);
 
+	//필요
+	Method		getMethod();
+	std::string 	getUri()	{ return (uri);	};
+	std::string 	getHttp_version();
+	std::string		getHeaderValue(std::string key);
+	std::string 	getBody();
+
 private:
 	int		status;
 	Method	method;

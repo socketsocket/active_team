@@ -43,9 +43,14 @@ public:
 	//getter
 	std::string	getPath();
 	std::string	getRoot();
-	std::vector<const std::string>	getIndex();
+	std::vector<std::string>	getIndex();
 	std::string	getCGIExecPath(std::string extension);
-	std::string	getErrorPage(int error_code);
+	// std::string	getErrorPage(int error_code);
+	std::set<Request::Method>			getMethodAllowed();
+	bool		isAutoIndex();
+	size_t		getReturnCode();
+	std::map<int, std::string>		getErrorPages();
+
 };
 
 #endif
