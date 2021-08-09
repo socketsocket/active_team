@@ -3,14 +3,16 @@
 
 # include <string>
 # include <map>
+# include <queue>
 
-struct	Message { int code; std::string message; };
+# include "Resource.hpp"
+
 
 class	Response
 {
 public:
-	Response();
-	// Response(std::string http_version, unsigned int status_code, std::string message);
+	struct	Message { int code; std::string message; };
+
 	Response(const Response &other);
 	~Response();
 
@@ -26,18 +28,18 @@ public:
 	void			setResoureFD(int fd);
 
 private:
-	// static const Message status_message[];
-
+	Response();
+	// static const Message status_message[63];
 
 	std::string							http_version;
 	unsigned int						status_code;
 	std::string							message;
+
 	std::map<std::string, std::string>	header;
 	// std::queue<std::string>			body;
 	std::string							body;
-	//한번에 읽으면 bodysize = 1 이니까 content-length 읽어서 헤더처리,
-	//1이 아니면 chunked 로 처리
 
+	Resource	*resource;
 	int		resourse_fd;
 };
 

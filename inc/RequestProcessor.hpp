@@ -19,8 +19,6 @@ private:
 	Request		*req;
 	Response	*res;
 
-	int	makeRequest(std::string raw_req);
-
 };
 
 #endif
