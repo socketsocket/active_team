@@ -381,13 +381,13 @@ int	ServerManager::monitorEvent()
 					}
 					//raw_request 호출
 /*----------------------------- 여기부터 진행 issue #5, 요청이 완료되었다는 전제 -----------------------------------------*/
-					if (client.getStatus() == REQUREST_COMPLETE)
+					if (client.getStatus() == REQUEST_COMPLETE)
 						// prepareResponse();
 						// resource_fd = 
 						client.prepareResponse();
 					if (client.getStatus() == NEED_RESOURCE)
 					{
-						types[client->reponse->resource.fd] = make_pair(client_fd, client->reponse->resource);
+						types[client->dialog->reponse->resource.fd] = make_pair(client_fd, client->dialog->reponse->resource);
 						EV_SET(client->reponse->resource.fd);
 					}
 					if (client.getStatus() == RESPONSE_COMPLETE)
@@ -770,34 +770,6 @@ Response Server::makeDELETEResponse(Location &location, std::string resource_pat
 	return (response);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 std::string	Server::statusMessage(size_t error_code) {
 	std::map<size_t, std::string> status;
 
@@ -859,26 +831,6 @@ if (mimeType.count(extension) == 0)
 	else
 		return mimeType[extension];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 std::string	Server::contentTypeHeader(std::string extension) {
 	std::map<std::string, std::string> mimeType;
@@ -946,6 +898,20 @@ std::string	Server::contentTypeHeader(std::string extension) {
 	else
 		return mimeType[extension];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

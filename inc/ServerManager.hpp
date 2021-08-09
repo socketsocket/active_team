@@ -23,6 +23,7 @@
 # include <fcntl.h>
 # include <exception>
 
+# include "PortManager.hpp"
 # include "Client.hpp"
 # include "Server.hpp"
 # include "Request.hpp"
