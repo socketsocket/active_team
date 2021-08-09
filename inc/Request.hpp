@@ -20,20 +20,20 @@ public:
 	//필요
 	int				getStatus();
 	Method			getMethod();
-	std::string 	getUri()	{ return (uri);	};
+	std::string 	getUri()	{ return (uri);	}
 	std::string 	getHttp_version();
 	std::map<std::string, std::string>	getHeaders();
-	// std::string		getHeaderValue(std::string key);
+	std::string		getHeaderValue(std::string key);
 	std::string 	getBody();
-	void	setBodyType(int);
+	int				getBodyType();
 
-	void	setStatus(int);
-	void	setMethod(int);
-	void	setUri(std::string);
-	void	setHttpVersion(std::string);
-	void	setHeaders(std::string, std::string);
-	void	addBody(std::string);
-	int		getBodyType();
+	void			setStatus(int);
+	void			setMethod(int);
+	void			setUri(std::string);
+	void			setHttpVersion(std::string);
+	void			setHeaders(std::string, std::string);
+	void			addBody(std::string);
+	void			setBodyType(int);
 
 private:
 	int		status;
@@ -45,7 +45,7 @@ private:
 	std::string body;
 
 	std::string raw_req;
-	int		body_type;
+	int		body_type;	//처음에 NOBODY 로 초기화
 };
 
 #endif

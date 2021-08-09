@@ -31,6 +31,8 @@ public:
 
 	int		acceptClient();	// return client fd
 
+	Server	getServer(std::string);
+
 private:
 	/* ---------------------------------------- */
 	/*         Constructor / Destructor         */

@@ -7,12 +7,12 @@
 
 # include "Resource.hpp"
 
-
 class	Response
 {
 public:
 	struct	Message { int code; std::string message; };
 
+	Response();
 	Response(const Response &other);
 	~Response();
 
@@ -28,7 +28,6 @@ public:
 	void			setResoureFD(int fd);
 
 private:
-	Response();
 	// static const Message status_message[63];
 
 	std::string							http_version;

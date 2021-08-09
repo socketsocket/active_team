@@ -8,6 +8,7 @@
 class	Resource : FDHandler
 {
 public:
+	Resource();
 	Resource(std::string path, int oflag);
 	~Resource();
 
@@ -17,7 +18,6 @@ public:
 	void	writeResource();
 
 private:
-	Resource();
 	Resource(const Resource &other);
 
 	int	openFile(std::string path, int oflag);

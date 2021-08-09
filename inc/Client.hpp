@@ -1,15 +1,6 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-// #include <iostream>
-// #include <string>
-// #include <stdio.h>
-
-// #include "RawRequestReader.hpp"
-// #include "Request.hpp"
-// #include "Response.hpp"
-// #include "PortManager.hpp"
-
 // # include <sys/types.h>
 // # include <sys/event.h>
 // # include <sys/time.h>
@@ -19,15 +10,20 @@
 // # include <fcntl.h>
 // # include <exception>
 
+# define PARSING_HEADER 0
+# define PARSING_BODY 1
 # define REQUEST_COMPLETE 3
 # define MAKING_RESPONSE 4
 # define NEED_RESOURCE 6
 # define SENDING_BODYR 5 //chunked 바디 보내는중
 # define RESPONSE_COMPLETE 7
 
+# define BUFFER_SIZE 65536
+
 # include <queue>
 # include <sstream>
 # include <string>
+# include <iostream>
 
 # include "FDHandler.hpp"
 # include "RequestReader.hpp"

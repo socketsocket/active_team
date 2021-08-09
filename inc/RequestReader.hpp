@@ -18,14 +18,16 @@ public:
 
 	RequestReader&	operator=(const RequestReader &other);
 
-	void		readRequest();
+	// void		readRequest();
 	Dialogue*	parseRequest();
 
 	Request* makeStartLine(Request *req);
 	Request* makeReqHeader(Request *req);
+	void	checkBody(Request *req);
 	Request* makeChunkedBody(Request *req);
 	Request* makeLengthBody(Request *req);
-	void	checkBody(Request *req);
+
+	std::string	getRawRequest();
 
 private:
 	RequestReader();

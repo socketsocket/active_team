@@ -2,16 +2,17 @@
 
 Request*	RequestReader::makeStartLine(Request *req)
 {
-	size_t	pos;
-	std::string			start_line;
-	std::string			tmp;
+	size_t			pos;
+	std::string		start_line;
+	std::string		tmp;
 
 	pos = this->buffer.find("\r\n");
 	if (pos == std::string::npos)
 		return (0);
 	start_line = this->buffer.substr(0, pos);
-	buffer.erase(0, pos + 2);
-	tmp = start_line.substr(0, start_line.find(' '));
+
+	pos = start_line.find(' ');
+	tmp = start_line.substr(0, pos);
 	if (tmp == "GET")
 		req->setMethod(Request::GET);
 	else if (tmp == "POST")
@@ -21,33 +22,35 @@ Request*	RequestReader::makeStartLine(Request *req)
 	else
 		req->setMethod(Request::OTHER);
 	
-	pos = start_line.find(' ');
-	
 	tmp = start_line.substr(pos + 1, start_line.rfind(' ') - (pos + 1));
 	req->setUri(tmp);
 	
 	tmp = start_line.substr(start_line.rfind(' ') + 1);
 	req->setHttpVersion(tmp);
 
+	if (this->buffer.length() > pos + 2)
+		this->buffer = this->buffer.substr(pos + 2);
+	else
+		this->buffer = "";
+
 	return (req);
 }
 
 Request*	RequestReader::makeReqHeader(Request *req)
 {
-	size_t	pos;
-	std::string tmp;
+	size_t		pos;
+	std::string header_line;
 	std::string key, value;
-	// std::stringstream	ss;
 
 	pos = this->buffer.find("\r\n");
 	if (pos == std::string::npos)
 		return (0);
 	while (pos != std::string::npos && pos != 0)
 	{
-		tmp = this->buffer.substr(0, pos);
+		header_line = this->buffer.substr(0, pos);
 		pos = this->buffer.find(":");
-		key = tmp.substr(0, pos);
-		value = tmp.substr(pos + 2);
+		key = header_line.substr(0, pos);
+		value = header_line.substr(pos + 2);
 		req->setHeaders(key, value);
 
 		this->buffer.erase(pos + 2);
@@ -73,7 +76,7 @@ void	RequestReader::checkBody(Request *req)
 Request*	RequestReader::makeChunkedBody(Request *req)
 {
 	size_t	len_line, content_line;
-	size_t	len;
+	size_t	len = 1;
 	std::string	tmp;
 
 	while (len)
@@ -84,6 +87,8 @@ Request*	RequestReader::makeChunkedBody(Request *req)
 			break;
 		tmp = this->buffer.substr(0, len_line);
 		len = strtol(tmp.c_str(), NULL, 16);
+		if (len == 0)
+			break;
 		tmp = this->buffer.substr(len_line + 2, len);
 		req->addBody(tmp);
 		this->buffer.erase(0, content_line + 2);

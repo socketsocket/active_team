@@ -433,7 +433,6 @@ void 	Client::prepareResponse() //maybe Client::ResourceProcesser::prepareRespon
 	Server		server = this->portmanager.getServer(this->request.getHeaderValue("HOST"));
 	Location	location = server.getLocation(this->request.getUri());
 
-
 	// 405 - Allowed Method
 	if (location.getMethodAllowed().empty() ||
 			std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), request.getMethod()) == location.getMethodAllowed().end())
