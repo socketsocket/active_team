@@ -21,11 +21,11 @@ public:
 	// void		readRequest();
 	Dialogue*	parseRequest();
 
-	Request* makeStartLine(Request *req);
-	Request* makeReqHeader(Request *req);
-	void	checkBody(Request *req);
-	Request* makeChunkedBody(Request *req);
-	Request* makeLengthBody(Request *req);
+	Request*	makeStartLine(Request *req);
+	Request* 	makeReqHeader(Request *req);
+	void		checkBody(Request *req);
+	Request*	makeChunkedBody(Request *req);
+	Request*	makeLengthBody(Request *req);
 
 	std::string	getRawRequest();
 

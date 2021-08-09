@@ -20,10 +20,11 @@ public:
 
 	int	raw(std::string *raw_string);
 
-	void			setStartLine(std::string http_version, unsigned int status_code, std::string msg);
+	void			makeStartLine(std::string http_version, unsigned int status_code, std::string msg);
 	void			addHeader(std::string, std::string);
 	void			addBody(std::string);
 
+	std::string		getStartLine();
 	std::string		getBody();
 	void			setResoureFD(int fd);
 
@@ -34,6 +35,7 @@ private:
 	unsigned int						status_code;
 	std::string							message;
 
+	std::string							start_line;
 	std::map<std::string, std::string>	header;
 	// std::queue<std::string>			body;
 	std::string							body;

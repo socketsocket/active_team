@@ -20,7 +20,8 @@ RequestProcessor& RequestProcessor::operator=(const RequestProcessor &other)
 
 void 	RequestProcessor::prepareResponse()
 {
-	Server		server = pm->getServer(req->getHeaderValue("HOST"));
+	std::map<std::string, std::string>::iterator iter = req->getHeaders().find("HOST");
+	Server		server = pm->getServer(iter->second);
 	Location	location = server.getLocation(req->getUri());
 
 
@@ -53,4 +54,10 @@ void 	RequestProcessor::prepareResponse()
 			*(this->getResponse()) = server.makeDELETEResponse(server, location, resource_path);
 		req->setStatus(NEED_RESOURCE);
 	}
+}
+
+Response* 
+	RequestProcessor::getResponse()
+{
+	return (res);
 }

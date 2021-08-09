@@ -26,8 +26,8 @@ public:
 	void	setCGI(std::string extension, std::string exe_path);
 
 	void	addIndex(std::string path); // Success : 0, Fail : 1
-	int		addCGI(std::string extension, std::string exe_path);
-	int		addErrorPage(int error_code, std::string page_path);
+	// int		addCGI(std::string extension, std::string exe_path);
+	// int		addErrorPage(int error_code, std::string page_path);
 	void	addMethod(std::string method);
 
 	//getter

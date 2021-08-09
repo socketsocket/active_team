@@ -146,3 +146,9 @@ Dialogue*	RequestReader::parseRequest(void)
 	}
 	return (dial);
 }
+
+std::string
+	RequestReader::getRawRequest()
+{
+	return (buffer);
+}

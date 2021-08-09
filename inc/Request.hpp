@@ -19,21 +19,20 @@ public:
 
 	//필요
 	int				getStatus();
-	Method			getMethod();
+	Method			getMethod(); // 이거 어떻게 쓰는거
 	std::string 	getUri()	{ return (uri);	}
-	std::string 	getHttp_version();
+	std::string 	getHttpVersion();
 	std::map<std::string, std::string>	getHeaders();
-	std::string		getHeaderValue(std::string key);
 	std::string 	getBody();
 	int				getBodyType();
 
-	void			setStatus(int);
-	void			setMethod(int);
-	void			setUri(std::string);
-	void			setHttpVersion(std::string);
-	void			setHeaders(std::string, std::string);
-	void			addBody(std::string);
-	void			setBodyType(int);
+	void			setStatus(int status);
+	void			setMethod(int method);
+	void			setUri(std::string uri);
+	void			setHttpVersion(std::string version);
+	void			setHeaders(std::string key, std::string val);
+	void			addBody(std::string body);
+	void			setBodyType(int type);
 
 private:
 	int				status;
