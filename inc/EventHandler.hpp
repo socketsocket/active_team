@@ -4,7 +4,7 @@
 # include <vector>
 # include <string>
 
-# include "FDHandler.hpp"
+# include "FDManager.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
 # include "Dialogue.hpp"
@@ -24,20 +24,17 @@ public:
 
 	void	start();
 
+	void	registerFD(FDManager *fdm);
+	void	unregisterFD(FDManager *fdm);
+
+	void	enableReadEvent(int fd);
+	void	enableWriteEvent(int fd);
+	void	setTimerEvent(int fd, int time);
+
 private:
 	EventHandler();
 
-	void	registFD(FDHandler *handler);
-
-	void	addReadEvent(int fd);
-	void	addWriteEvent(int fd);
-	void	addTimerEvent(int fd, int time);
-
-	void	deleteReadEvent(int fd);
-	void	deleteWriteEvent(int fd);
-	void	deleteTimerEvent(int fd);
-
-	std::vector<FDHandler *>		fds;
+	std::vector<FDManager *>		fds;
 	std::vector<Server *>			servers;
 	std::map<int, PortManager *>	portManagers;
 	int								kq;

@@ -4,7 +4,7 @@
 # include "Request.hpp"
 # include "Response.hpp"
 
-class	Dialogue
+struct	Dialogue
 {
 public:
 	enum	Status
@@ -14,16 +14,11 @@ public:
 		WritingResponse,
 	};
 
-	Dialogue() : req(NULL), res(NULL), status(ReadingRequest) {}
+	Dialogue() : status(ReadingRequest) {}
 	~Dialogue() {}
 
-private:
-	Dialogue(const Dialogue &other);
-
-	Dialogue&	operator=(const Dialogue &other);
-
-	Request		*req;
-	Response	*res;
+	Request		req;
+	Response	res;
 	Status		status;
 };
 

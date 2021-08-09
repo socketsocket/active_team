@@ -14,12 +14,19 @@ public:
 	enum Method	{ GET, POST, DELETE };
 
 	Request();
-	Request(const Request &other);
 	~Request();
+
+	void	setMethod(Method method);
+	void	setURI(std::string uri);
+	void	setHTTPVersion(std::string version);
+	void	addHeader(std::string key, std::string value);
+	void	addBody(std::string body);
+
+private:
+	Request(const Request &other);
 
 	Request&	operator=(const Request &other);
 
-private:
 	Method								method;
 	std::string							uri;
 	std::string							http_version;

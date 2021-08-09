@@ -23,7 +23,7 @@ public:
 	int		addLocation(std::string path, Location *loc);
 	int		addErrorPage(int error_code, std::string page_path);
 
-	int		setBodyLimit(int limit) { body_limit = limit; }
+	int		setBodyLimit(int bytes);
 	void	setAutoindex(std::string on_off_string);
 	int		setReturnInfo(int code, std::string uri);
 

@@ -7,7 +7,9 @@ public:
 	ResponseWriter(Dialogue *dialogue_to_write);
 	~ResponseWriter();
 
-	bool	writeResponse();
+	bool	emptyBuffer();
+	void	setResponse(Response &res);
+	void	writeResponse();
 
 private:
 	ResponseWriter();

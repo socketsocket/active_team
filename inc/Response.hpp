@@ -11,15 +11,17 @@ class	Response
 public:
 	struct Message { int code; std::string message; };
 
-	Response(const Response &other);
+	Response();
 	~Response();
-
-	Response&	operator=(const Response &other);
 
 	static const Message status_message[63];
 
 private:
-	Response();
+	Response(const Response &other);
+
+	Response&	operator=(const Response &other);
+
+	Resource	*resource;
 
 	std::string	http_version;
 	int			status_code;
@@ -27,7 +29,6 @@ private:
 	std::map<std::string, std::string>	header;
 	std::queue<std::string>				body;
 
-	Resource	*resource;
 };
 
 const Response::Message Response::status_message[] = {

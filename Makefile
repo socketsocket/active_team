@@ -6,7 +6,7 @@
 #    By: seyu <seyu@student.42seoul.kr>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/10/10 23:07:12 by seheon            #+#    #+#              #
-#    Updated: 2021/08/06 16:22:33 by seyu             ###   ########.fr        #
+#    Updated: 2021/08/09 23:08:52 by seyu             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -51,7 +51,7 @@ SRCS	=	main.cpp
 SRCS	+=	\
 			Client.cpp \
 			EventHandler.cpp \
-			FDHandler.cpp \
+			FDManager.cpp \
 			PortManager.cpp \
 			Server.cpp
 

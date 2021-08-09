@@ -2,34 +2,34 @@
 # define CLIENT_HPP
 
 # include <queue>
-# include <sstream>
 # include <string>
 
-# include "FDHandler.hpp"
+# include "FDManager.hpp"
+# include "PortManager.hpp"
 # include "RequestReader.hpp"
-# include "RequestProcessor.hpp"
 # include "ResponseWriter.hpp"
 # include "Dialogue.hpp"
 
-class	Client : public FDHandler
+class	Client : public FDManager
 {
 public:
-	Client(int socket_fd, PortManager *pm);
+	Client(PortManager *pm);
 	~Client();
 
-	Client&	operator=(const Client& other);
-
-	void	readRequest();
-	void	writeResponse();
+	virtual void	readEvent();
+	virtual void	writeEvent();
 
 private:
 	Client();
 	Client(const Client& other);
 
-	RequestReader		reader;
-	RequestProcessor	processor;
-	ResponseWriter		writer;
+	Client&	operator=(const Client& other);
 
+	int	openSocket(int server_socket);
+
+	PortManager				*pm;
+	RequestReader			reader;
+	ResponseWriter			writer;
 	std::queue<Dialogue *>	dialogues;
 };
 

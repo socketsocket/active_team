@@ -17,7 +17,7 @@ public:
 
 	Location&	operator=(const Location &other);
 
-	void	setRoot(std::string root_path) { root = root_path; }
+	void	setRoot(std::string root_path);
 	void	setAutoindex(std::string on_off_string);
 	void	setReturnInfo(int code, std::string uri);
 	void	setErrorPage(int error_code, std::string page_path);

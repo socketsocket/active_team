@@ -3,21 +3,26 @@
 
 # include <string>
 
-# include "FDHandler.hpp"
+# include "FDManager.hpp"
+# include "CGI.hpp"
 
-class	Resource : FDHandler
+class	Resource : FDManager
 {
 public:
-	Resource(std::string path, int oflag);
+	enum Type { READ, OVERWRITE, APPEND };
+
+	Resource(std::string path, Type type);
+	Resource(CGI &cgi);
 	~Resource();
 
 	Resource&	operator=(const Resource &other);
 
+	virtual void	readEvent();
+	virtual void	writeEvent();
+
 private:
 	Resource();
 	Resource(const Resource &other);
-
-	int	openFile(std::string path, int oflag);
 };
 
 #endif
