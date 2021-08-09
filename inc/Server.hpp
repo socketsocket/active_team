@@ -37,8 +37,21 @@ public:
 
 	Server& operator= (const Server& s);
 
+	//config parsing
+	int			addLocation(std::string path, Location *loc); // Success : 0, Fail : 1
+	int			addErrorPage(int error_code, std::string page_path); // Success : 0, Fail : 1
+
+	int			setBodyLimit(unsigned long limit);
+	void		setAutoindex(std::string on_off_string);
+	int			setReturnInfo(int code, std::string uri);
+	
+	
+	//make Response
 	Response	makeResponse(Request req); //안에서 스타트라인,헤더처리
 
+	std::string	makeHTMLPage(std::string body);
+	std::string	generateErrorPage(size_t error_code);
+	
 	Response	makeErrorResponse(Server &server, Location &location, size_t);
 	Response	makeReturnResponse(size_t);
 	std::string	makeAutoIndexPage(std::string path, std::string uri, Location &location);
@@ -47,35 +60,20 @@ public:
 	Response	makeDELETEResponse(Server &, Location &, std::string);
 	Response	makeCGIResponse();
 
-	void		makeStartLine();
-	void		makeHeaders();
-
-	int			addLocation(std::string path, Location *loc); // Success : 0, Fail : 1
-	int			addErrorPage(int error_code, std::string page_path); // Success : 0, Fail : 1
-
-	int			setBodyLimit(unsigned long limit);
-	void		setAutoindex(std::string on_off_string);
-	int			setReturnInfo(int code, std::string uri);
-
-	//필요
-	std::string					contentTypeHeader(std::string extension);
 	std::string					statusMessage(size_t error_code);
-
+	std::string					contentTypeHeader(std::string extension);
 	std::string					dateHeader();
 	
+	bool						isAutoIndex();
+	int							checkPath(std::string path);
+	int							deleteDirectory(std::string path);
+	
+
+	//getter
 	Location					getLocation(std::string uri);
 	unsigned int				getBodyLimit();
 	size_t						getReturnCode();
 	std::map<int, std::string>	getErrorPages();
-
-
-	std::string 				makeHTMLPage(std::string body);
-	
-	bool						isAutoIndex();
-	int							checkPath(std::string path);
-	int						deleteDirectory(std::string path);
-
-	std::string					generateErrorPage(size_t error_code);
 };
 
 #endif

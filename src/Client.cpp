@@ -16,6 +16,11 @@ Client::~Client()
 	}
 }
 
+Client& Client::operator=(const Client &other)
+{
+	return (*this);
+}
+
 void	Client::readRequest()
 {
 	//읽어서 RequestReader buffer 에 raw_request 를 담고

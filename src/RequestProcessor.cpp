@@ -1,5 +1,18 @@
 #include "RequestProcessor.hpp"
 
+RequestProcessor::RequestProcessor(PortManager *port_manager)
+{
+}
+
+RequestProcessor::~RequestProcessor()
+{
+}
+
+RequestProcessor& RequestProcessor::operator=(const RequestProcessor &other)
+{
+	return (*this);
+}
+
 // 클라이언트에서 내 프로세스처리클래스에서 응답을 준비시키고
 // 그 안에서 서버가 makeResponse 를 실행시키고
 // 그 과정에서 리스폰스 클래스에 있는 addHeader 함수 등을 실행시켜 필요한 정보를 담는다
@@ -40,26 +53,4 @@ void 	RequestProcessor::prepareResponse()
 			*(this->getResponse()) = server.makeDELETEResponse(server, location, resource_path);
 		req->setStatus(NEED_RESOURCE);
 	}
-}
-
-std::string Server::makeHTMLPage(std::string content)
-{
-	std::string html;
-
-	html += "<html>\r\n";
-
-	html += "<head>\r\n";
-	html += "</head>\r\n";
-
-	html += "<body>\r\n";
-	html += "<hr>\r\n";
-	html += "<pre>\r\n";
-	html += content;
-	html += "</pre>\r\n";
-	html += "<hr>\r\n";
-	html += "</body>\r\n";
-
-	html += "</html>";
-	
-	return (html);
 }

@@ -8,7 +8,7 @@
 class	Resource : FDHandler
 {
 public:
-	Resource();
+	Resource(); //얘가 필요함
 	Resource(std::string path, int oflag);
 	~Resource();
 

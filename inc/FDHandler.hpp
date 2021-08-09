@@ -4,13 +4,13 @@
 class	FDHandler
 {
 public:
+	FDHandler();
 	FDHandler(int fd);
 	virtual ~FDHandler();
 
 	int	getFD() { return (fd); }
 
 private:
-	FDHandler();
 	FDHandler(const FDHandler &other);
 
 	FDHandler&	operator=(const FDHandler &other);

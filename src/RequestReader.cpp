@@ -1,5 +1,19 @@
 #include "RequestReader.hpp"
 
+
+RequestReader::RequestReader(int client_socket)
+{
+}
+
+RequestReader::~RequestReader()
+{
+}
+
+RequestReader& RequestReader::operator=(const RequestReader &other)
+{
+	return (*this);
+}
+
 Request*	RequestReader::makeStartLine(Request *req)
 {
 	size_t			pos;

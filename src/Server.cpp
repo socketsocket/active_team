@@ -1,5 +1,23 @@
 #include "Server.hpp"
 
+Server::Server()
+{
+}
+
+Server::Server(const Server &s)
+{
+	*this = s;
+}
+
+Server::~Server()
+{
+}
+
+Server& Server::operator=(const Server &s)
+{
+	return (*this);
+}
+
 void
 	Server::setAutoindex(std::string on_off_string)
 {
@@ -9,6 +27,29 @@ void
 		auto_index = false;
 	else
 		throw BadDirective(on_off_string);
+}
+
+std::string 
+	Server::makeHTMLPage(std::string content)
+{
+	std::string html;
+
+	html += "<html>\r\n";
+
+	html += "<head>\r\n";
+	html += "</head>\r\n";
+
+	html += "<body>\r\n";
+	html += "<hr>\r\n";
+	html += "<pre>\r\n";
+	html += content;
+	html += "</pre>\r\n";
+	html += "<hr>\r\n";
+	html += "</body>\r\n";
+
+	html += "</html>";
+	
+	return (html);
 }
 
 std::string
@@ -68,20 +109,11 @@ Response Server::makeErrorResponse(Server &server, Location &location, size_t er
 	return (response);
 }
 
-int		Server::checkPath(std::string path)
+Response	Server::makeReturnResponse(size_t)
 {
-	struct stat buf;
 
-	if (stat(path.c_str(), &buf) == -1)
-		return NotFound;
-	else
-	{
-		if (S_ISREG(buf.st_mode))
-			return File;
-		else if (S_ISDIR(buf.st_mode))
-			return Directory;
-	}
 }
+
 
 std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Location &location)
 {
@@ -207,6 +239,42 @@ Response Server::makePOSTResponse(Server &server, Location &location, std::strin
 	return (response);
 }
 
+Response Server::makeDELETEResponse(Server &server, Location &location, std::string resource_path)
+{
+	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
+	Response response;
+
+	response.addHeader("Date", this->dateHeader());
+	response.addHeader("Server", "hsonseyu Server");
+
+	if (checkPath(resource_path) == Directory)
+	{
+		if (this->deleteDirectory(resource_path) == 1)
+			response.addBody(this->generateErrorPage(500));
+	}
+	else if (checkPath(resource_path) == File)
+		unlink(resource_path.c_str());
+
+	response.addBody(this->makeHTMLPage(/*body 내용*/));
+
+	return (response);
+}
+
+int		Server::checkPath(std::string path)
+{
+	struct stat buf;
+
+	if (stat(path.c_str(), &buf) == -1)
+		return NotFound;
+	else
+	{
+		if (S_ISREG(buf.st_mode))
+			return File;
+		else if (S_ISDIR(buf.st_mode))
+			return Directory;
+	}
+}
+
 int		Server::deleteDirectory(std::string path)
 {
 	//디렉토리 오픈해서 하나하나 다 지우고 그 안에서도 파일이면 unlink, 디렉토리면 이 과정 반복
@@ -231,27 +299,6 @@ int		Server::deleteDirectory(std::string path)
 	}
 	rmdir(path.c_str());
 	return ;
-}
-
-Response Server::makeDELETEResponse(Server &server, Location &location, std::string resource_path)
-{
-	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
-	Response response;
-
-	response.addHeader("Date", this->dateHeader());
-	response.addHeader("Server", "hsonseyu Server");
-
-	if (checkPath(resource_path) == Directory)
-	{
-		if (this->deleteDirectory(resource_path) == 1)
-			response.addBody(this->generateErrorPage(500));
-	}
-	else if (checkPath(resource_path) == File)
-		unlink(resource_path.c_str());
-
-	response.addBody(this->makeHTMLPage(/*body 내용*/));
-
-	return (response);
 }
 
 std::string	Server::statusMessage(size_t error_code) {
@@ -380,4 +427,15 @@ std::string	Server::contentTypeHeader(std::string extension) {
 		return "text/plain";
 	else
 		return mimeType[extension];
+}
+
+std::string	
+	Server::dateHeader(void)
+{
+	time_t curr_time = time(NULL);
+	struct tm* time_info = localtime(&curr_time);
+	char buffer[4096];
+
+	strftime(buffer, 4096, "%a, %d %b %Y %H:%M:%S GMT", time_info);
+	return (std::string(buffer));
 }
