@@ -1,14 +1,17 @@
 #ifndef RESPONSEWRITER_HPP
 # define RESPONSEWRITER_HPP
 
+# include "Response.hpp"
+# include "Dialogue.hpp"
+
 class	ResponseWriter
 {
 public:
 	ResponseWriter(Dialogue *dialogue_to_write);
 	~ResponseWriter();
 
+	void	pushResponse(Response &res);
 	bool	emptyBuffer();
-	void	setResponse(Response &res);
 	void	writeResponse();
 
 private:
@@ -17,7 +20,7 @@ private:
 
 	ResponseWriter&	operator=(const ResponseWriter &other);
 
-	std::vector<std::string>	buffer;
+	std::deque<std::string>	buffer;
 };
 
 #endif

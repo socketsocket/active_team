@@ -7,6 +7,7 @@
 # include <string>
 
 # include "Request.hpp"
+# include "Response.hpp"
 
 class	Location
 {
@@ -20,8 +21,22 @@ public:
 	void	setErrorPage(int error_code, std::string page_path);
 	void	setCGI(std::string extension, std::string exe_path);
 
-	void	addIndex(std::string path);
+	void	addIndex(std::string path); // Success : 0, Fail : 1
+	// int		addCGI(std::string extension, std::string exe_path);
+	// int		addErrorPage(int error_code, std::string page_path);
 	void	addMethod(std::string method);
+
+	//getter
+	std::string					getPath();
+	std::string					getRoot();
+	std::vector<std::string>	getIndex();
+	std::string					getCGIExecPath(std::string extension);
+	std::map<std::string, std::string>	getCGIInfo();
+	bool						isAutoIndex();
+	size_t						getReturnCode();
+	std::pair<int, std::string>	getReturnInfo();
+	std::map<int, std::string>	getErrorPages();
+	std::set<Request::Method>	getMethodAllowed();
 
 private:
 	Location(const Location &other);

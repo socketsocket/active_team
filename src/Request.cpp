@@ -1,4 +1,64 @@
 #include "Request.hpp"
+#include "Exception.hpp"
+
+Request::Request()
+{
+}
+
+Request::Request(const Request &req)
+{
+	*this = req;
+}
+
+Request::~Request()
+{
+}
+
+Request& Request::operator=(const Request &req)
+{
+	return (*this);
+}
+
+int		Request::getStatus()
+{
+	return (status);
+}
+
+// Method	Request::getMethod()
+// {
+// 	return (method);
+// }
+
+std::string& Request::getUri()
+{
+	return (uri);
+}
+
+std::string Request::getHttpVersion()
+{
+	return (http_version);
+}
+
+std::map<std::string, std::string>&
+	Request::getHeaders()
+{
+	return (headers);
+}
+
+std::string&	Request::getBody()
+{
+	return (body);
+}
+
+int	Request::getBodyType()
+{
+	return (body_type);
+}
+
+void	Request::setStatus(int status)
+{
+	this->status = status;
+}
 
 void
 	Request::setMethod(Method method)
@@ -7,26 +67,28 @@ void
 }
 
 void
-	Request::setURI(std::string uri)
+	Request::setUri(std::string uri)
 {
 	this->uri = uri;
 }
 
-void
-	Request::setHTTPVersion(std::string version)
+void Request::setHttpVersion(std::string version)
 {
 	this->http_version = version;
 }
 
-void
-	Request::addHeader(std::string key, std::string value)
+void Request::setHeaders(std::string key, std::string val)
 {
-	if (headers.insert(std::make_pair(key, value)).second == false)
+	if (headers.insert(std::make_pair(key, val)).second == false)
 		throw BadRequest();
 }
 
-void
-	Request::addBody(std::string body)
+void Request::addBody(std::string body)
 {
-	this->body.push_back(body);
+	this->body += body;
+}
+
+void Request::setBodyType(int type)
+{
+	this->body_type = type;
 }

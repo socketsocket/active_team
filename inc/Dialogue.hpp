@@ -13,6 +13,7 @@ public:
 		ReadingRequest,
 		Processing,
 		WritingResponse,
+		ReadyToResponse
 	};
 
 	Dialogue() : status(ReadingRequest) {}

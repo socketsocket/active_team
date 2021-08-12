@@ -8,7 +8,7 @@
 # include "FDManager.hpp"
 # include "Dialogue.hpp"
 
-class	Resource : FDManager
+class	Resource : public FDManager
 {
 public:
 	enum Type { READ, OVERWRITE, APPEND };

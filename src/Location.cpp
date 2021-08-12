@@ -70,3 +70,45 @@ void
 	if (insert_return.second == false)
 		throw BadDirectiveValue(method);
 }
+
+
+std::string					Location::getPath()
+{
+	return (path);
+}
+
+std::string					Location::getRoot()
+{
+	return (root);
+}
+std::vector<std::string>	Location::getIndex()
+{
+	return (index);
+}
+std::string					Location::getCGIExecPath(std::string extension)
+{
+	std::map<std::string, std::string>::iterator iter = cgi_info.find(extension);
+	return (iter->second);
+}
+
+std::map<std::string, std::string>	Location::getCGIInfo()
+{
+	return (cgi_info);
+}
+
+bool						Location::isAutoIndex()
+{
+	return (auto_index);
+}
+size_t						Location::getReturnCode()
+{
+	return (return_info.first);
+}
+std::map<int, std::string>	Location::getErrorPages()
+{
+	return (error_pages);
+}
+std::set<Request::Method>	Location::getMethodAllowed()
+{
+	return (allowed_methods);
+}

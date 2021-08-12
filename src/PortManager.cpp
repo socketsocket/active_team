@@ -37,7 +37,7 @@ PortManager::PortManager(int port) : FDManager(openSocket(port))
 void
 	PortManager::addServer(std::string server_name, Server *server)
 {
-	servers.insert(std::pair<std::string, Server*>(server_name, server));
+	servers.push_back(std::pair<std::string, Server*>(server_name, server));
 }
 
 void

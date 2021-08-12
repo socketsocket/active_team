@@ -8,8 +8,11 @@
 #include "EventHandler.hpp"
 #include "Exception.hpp"
 
+<<<<<<< HEAD
+=======
 /* static */
 
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 static inline void
 	tolower(std::string &s)
 {
@@ -172,8 +175,11 @@ static void
 	}
 }
 
+<<<<<<< HEAD
+=======
 /* public */
 
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 EventHandler::EventHandler(std::string config_file_path)
 {
 	std::ifstream			config_file(config_file_path);
@@ -223,11 +229,20 @@ void
 			itr != portManagers.end();
 			++itr)
 	{
+<<<<<<< HEAD
+		registerFD(itr->second);
+		addReadEvent(itr->second->getFD());
+=======
 		enableReadEvent(itr->second->getFD());
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 	}
 
 	struct kevent	event_list[MAX_EVENT_SIZE];
 	struct kevent	*curr_event;
+<<<<<<< HEAD
+	FDHandler		*fd_handler;
+=======
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 
 	while (true)
 	{
@@ -239,6 +254,64 @@ void
 		for (int i = 0; i < num_of_event; ++i)
 		{
 			curr_event = event_list + i;
+<<<<<<< HEAD
+			fd_handler = fds[curr_event->ident];
+			if (dynamic_cast<PortManager *>(fd_handler))
+			{
+				PortManager	*pm = dynamic_cast<PortManager *>(fd_handler);
+
+				if (curr_event->filter & EVFILT_READ)
+				{
+					int			client_fd = pm->acceptClient();
+
+					registerFD(new Client(client_fd, pm));
+					addReadEvent(client_fd);
+				}
+				else
+					throw UnknownEventIdentifier();
+			}
+			else if (dynamic_cast<Client *>(fd_handler))
+			{
+				Client	*client = dynamic_cast<Client *>(fd_handler);
+
+				if (curr_event->filter & EVFILT_READ)
+				{
+					client->readRequest();
+				}
+				else if (curr_event->filter & EVFILT_WRITE)
+				{
+					client->writeResponse();
+				}
+				else if (curr_event->filter & EVFILT_TIMER)
+				{
+					// client->write408();
+					unregisterFD(client->getFD());
+					delete client;
+				}
+				else
+					throw UnknownEventIdentifier();
+			}
+			else if (dynamic_cast<Resource *>(fd_handler))
+			{
+				Resource	*resource = dynamic_cast<Resource *>(fd_handler);
+
+				if (curr_event->filter & EVFILT_READ)
+				{
+					resource->readResource();
+				}
+				else if (curr_event->filter & EVFILT_WRITE)
+				{
+					resource->writeResource();
+				}
+				else
+					throw UnknownEventIdentifier();
+			}
+			else
+				throw UnknownEventIdentifier();
+		}
+	}
+}
+=======
 			if (curr_event->filter == EVFILT_READ)
 				fds[curr_event->ident]->readEvent();
 			else if (curr_event->filter == EVFILT_WRITE)
@@ -296,3 +369,4 @@ void
 }
 
 /* private */
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7

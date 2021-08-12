@@ -21,13 +21,15 @@ public:
 	virtual void	writeEvent();
 	virtual void	timerEvent();
 
+	Server*	getServer(std::string hostname);
+
 private:
 	PortManager();
 	PortManager(const PortManager &other);
 
 	PortManager&	operator=(const PortManager &other);
 
-	std::map<std::string, Server *>	servers;
+	std::vector<std::pair<std::string, Server *> >	servers; //pair(hostname, server) 로 저장하고 find_if로 찾기 - default
 };
 
 #endif

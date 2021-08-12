@@ -61,8 +61,8 @@ CGI::CGI(const std::string &script_path, Dialogue *dialogue, std::string &server
 	: FDManager(openPipe(script_stdin)),
 	  dialogue(dialogue)
 {
-	std::map<std::string, std::string>	&req_header = dialogue->req.headers;
-	std::string	&uri = dialogue->req.uri;
+	std::map<std::string, std::string>	&req_header = dialogue->req.getHeaders();
+	std::string	&uri = dialogue->req.getUri();
 
 	if ((script_pid = fork()) == -1)
 		throw SystemCallError("fork");
@@ -90,7 +90,7 @@ CGI::CGI(const std::string &script_path, Dialogue *dialogue, std::string &server
 		setenv("REMOTE_HOST", "", 1);
 		setenv("REMOTE_IDENT", "", 1);
 		setenv("REMOTE_USER", "", 1);
-		setenv("REQUEST_METHOD", getMethod(dialogue->req.method).c_str(), 1);
+		setenv("REQUEST_METHOD", getMethod(dialogue->req.getMethod()).c_str(), 1);
 		setenv("SCRIPT_NAME", uri.substr(0, uri.find('?')).c_str(), 1);
 		setenv("SERVER_NAME", server_name.c_str(), 1);
 		setenv("SERVER_PORT", std::to_string(server_port).c_str(), 1);
@@ -123,17 +123,17 @@ void
 void
 	CGI::writeEvent()
 {
-	std::string	&write_buffer = dialogue->req.body.front();
-	int	write_size;
+	std::string	&write_buffer = dialogue->req.getBody();
+	int			write_size;
 
 	if ((write_size = write(getFD(), &write_buffer[0], WRITE_BUFFER_SIZE)) == -1)
 		throw SystemCallError("write");
 	else if (write_size == write_buffer.size())
-		dialogue->req.body.pop_front();
+		dialogue->req.getBody().clear();
 	else
-		dialogue->req.body.front().erase(0, write_size);
+		dialogue->req.getBody().erase(0, write_size);
 
-	if (dialogue->req.body.size() > 0)
+	if (dialogue->req.getBody().size() > 0)
 		EventHandlerInstance::getInstance().enableWriteEvent(getFD());
 }
 
