@@ -4,18 +4,8 @@ Response::Response()
 {
 }
 
-Response::Response(const Response &other)
-{
-	*this = other;
-}
-
 Response::~Response()
 {
-}
-
-Response& Response::operator=(const Response &ref)
-{
-	return (*this);
 }
 
 void
@@ -44,7 +34,7 @@ std::string
 	return (start_line);
 }
 
-std::string
+std::string&
 	Response::getBody()
 {
 	return (body);

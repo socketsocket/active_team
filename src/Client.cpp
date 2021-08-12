@@ -3,16 +3,6 @@
 
 #include "Client.hpp"
 
-static int
-	openSocket(int server_socket)
-{
-	int	client_socket = accept(server_socket, NULL, NULL);
-
-	if (client_socket == -1)
-		throw SystemCallError("accept");
-	return (client_socket);
-}
-
 Client::Client(PortManager *pm)
 	: FDManager(openSocket(pm->getFD())),
 	  pm(pm),
@@ -81,7 +71,7 @@ void 	Client::prepareResponse(PortManager *pm, Dialogue *dial)
 {
 	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("HOST");
 	Server		*server = pm->getServer(iter->second);
-	Location	location = server->getLocation(dial->req.getUri());
+	Location	&location = server->getLocation(dial->req.getUri());
 
 
 	// Allowed Method (405 error)

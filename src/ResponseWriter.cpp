@@ -4,18 +4,8 @@ ResponseWriter::ResponseWriter()
 {
 }
 
-ResponseWriter::ResponseWriter(const ResponseWriter &ref)
-{
-	*this = ref;
-}
-
 ResponseWriter::~ResponseWriter()
 {
-}
-
-ResponseWriter& ResponseWriter::operator=(const ResponseWriter &ref)
-{
-	return (*this);
 }
 
 void	ResponseWriter::pushResponse(Response &res)

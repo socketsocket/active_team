@@ -5,18 +5,8 @@ Request::Request()
 {
 }
 
-Request::Request(const Request &req)
-{
-	*this = req;
-}
-
 Request::~Request()
 {
-}
-
-Request& Request::operator=(const Request &req)
-{
-	return (*this);
 }
 
 int		Request::getStatus()

@@ -4,6 +4,8 @@
 # include <map>
 # include <string>
 
+class	Server;
+
 # include "FDManager.hpp"
 # include "Server.hpp"
 

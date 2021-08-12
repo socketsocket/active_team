@@ -1,7 +1,8 @@
 #include "RequestReader.hpp"
-
+#include "Dialogue.hpp"
 
 RequestReader::RequestReader(int client_socket)
+	: client_fd(client_socket)
 {
 }
 
@@ -9,24 +10,19 @@ RequestReader::~RequestReader()
 {
 }
 
-RequestReader& RequestReader::operator=(const RequestReader &other)
-{
-	return (*this);
-}
-
 void	RequestReader::readRequest(void)
 {
-	// 버퍼사이즈를 인자로 받아오기
-	char	buf[BUFFER_SIZE];
-	int		len;
+// 	// 버퍼사이즈를 인자로 받아오기
+// 	char	buf[BUFFER_SIZE];
+// 	int		len;
 
-	len = read(this->client_fd, buf, BUFFER_SIZE - 1);
-	if (len <= 0)
-	{
-		//error
-	}
-	buf[len] = 0;
-	reader.getRawRequest() += buf;
+// 	len = read(this->client_fd, buf, BUFFER_SIZE - 1);
+// 	if (len <= 0)
+// 	{
+// 		//error
+// 	}
+// 	buf[len] = 0;
+// 	reader.getRawRequest() += buf;
 }
 
 template <typename InputIt>
@@ -58,7 +54,7 @@ void	RequestReader::makeStartLine(Request &req)
 	else if (tmp == "DELETE")
 		req.setMethod(Request::DELETE);
 	else
-		req.setMethod(Request::OTHER);
+		throw BadRequest();
 	
 	tmp = start_line.substr(pos + 1, start_line.rfind(' ') - (pos + 1));
 	req.setUri(tmp);
@@ -81,7 +77,7 @@ void	RequestReader::makeReqHeader(Request &req)
 
 	pos = this->buffer.find("\r\n");
 	if (pos == std::string::npos)
-		throw BadRequest(400);
+		throw BadRequest();
 	while (pos != std::string::npos && pos != 0)
 	{
 		header_line = this->buffer.substr(0, pos);
@@ -105,7 +101,7 @@ void	RequestReader::checkBody(Request &req)
 	if (iter != req.getHeaders().end() && iter->second == "chunked")
 	{
 		if ((iter = req.getHeaders().find("content-length")) != req.getHeaders().end())
-			throw BadRequest(400);
+			throw BadRequest();
 		req.setBodyType(CHUNKED);
 	}
 
@@ -113,7 +109,7 @@ void	RequestReader::checkBody(Request &req)
 	if (iter != req.getHeaders().end())
 	{
 		if ((iter = req.getHeaders().find("transfer-encoding")) != req.getHeaders().end())
-			throw BadRequest(400);
+			throw BadRequest();
 		req.setBodyType(CONTENT_LENGTH);
 	}
 
@@ -163,22 +159,22 @@ Dialogue*	RequestReader::parseRequest(void)
 {
 	Dialogue *dial = new Dialogue;
 
-	if (dial->getReq().getStatus() == PARSING_START)
-		this->makeStartLine(dial->getReq());
-	if (dial->getReq().getStatus() == PARSING_HEADER)
+	if (dial->req.getStatus() == PARSING_START)
+		this->makeStartLine(dial->req);
+	if (dial->req.getStatus() == PARSING_HEADER)
 	{
-		this->makeReqHeader(dial->getReq());
-		this->checkBody(dial->getReq());
+		this->makeReqHeader(dial->req);
+		this->checkBody(dial->req);
 	}
-	if (dial->getReq().getStatus() == PARSING_BODY)
+	if (dial->req.getStatus() == PARSING_BODY)
 	{
-		if (dial->getReq().getBodyType() == CHUNKED)
-			this->makeChunkedBody(dial->getReq());
-		else if (dial->getReq().getBodyType() == CONTENT_LENGTH)
-			this->makeLengthBody(dial->getReq());
+		if (dial->req.getBodyType() == CHUNKED)
+			this->makeChunkedBody(dial->req);
+		else if (dial->req.getBodyType() == CONTENT_LENGTH)
+			this->makeLengthBody(dial->req);
 	}
 
-	if (dial->getReq().getStatus() == REQUEST_COMPLETE)
+	if (dial->req.getStatus() == REQUEST_COMPLETE)
 		return (dial);
 	else
 		return (0);

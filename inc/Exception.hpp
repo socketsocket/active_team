@@ -9,8 +9,9 @@ class	SystemCallError : std::exception
 {
 public:
 	SystemCallError(std::string function_name)	{ error_message = function_name + ": " + strerror(errno); }
+	virtual ~SystemCallError() throw()	{}
 
-	const char	*what() const throw() override
+	virtual const char	*what() const throw()
 	{
 		return (error_message.c_str());
 	}
@@ -22,7 +23,7 @@ private:
 class	UnknownEventIdentifier : std::exception
 {
 public:
-	const char	*what() const throw() override
+	virtual const char	*what() const throw()
 	{
 		return ("Unknown identifier is returned from kqueue");
 	}
@@ -31,7 +32,7 @@ public:
 class	BadFileDescriptor : std::exception
 {
 public:
-	const char	*what() const throw() override
+	virtual const char	*what() const throw()
 	{
 		return ("Bad file descriptor");
 	}
@@ -41,8 +42,9 @@ class	ParsingError : std::exception
 {
 public:
 	ParsingError(std::string reason)	{ error_message = "Parsing error: " + reason; }
+	virtual ~ParsingError()	throw()		{}
 
-	const char	*what() const throw() override
+	virtual const char	*what() const throw()
 	{
 		return (error_message.c_str());
 	}
@@ -63,11 +65,11 @@ public:
 	NoExpectedDirective(std::string directive) : ParsingError("Expected `" + directive + "`") {}
 };
 
-class	BadRequest : ParsingError
-{
-public:
-	BadRequest(int error_code)	: ParsingError(error_code + ": bad request") {}
-};
+// class	BadRequest : ParsingError
+// {
+// public:
+// 	BadRequest(int error_code)	: ParsingError(std::to_string(error_code) + ": bad request") {}
+// };
 
 class	BadDirectiveValue : ParsingError
 {
@@ -81,12 +83,6 @@ public:
 	DoubleDirective(std::string directive) : ParsingError(directive + ": double declaration") {}
 };
 
-class	NoExpectedDirective : ParsingError
-{
-public:
-	NoExpectedDirective(std::string directive) : ParsingError("Expected `" + directive + "`") {}
-};
-
 class	UnexceptedEOF : ParsingError
 {
 public:
@@ -97,8 +93,9 @@ class	UnexceptedEventOccured : std::exception
 {
 public:
 	UnexceptedEventOccured(std::string event_object)	{ error_message = "Unexcepted event occured: " + event_object; }
+	virtual ~UnexceptedEventOccured() throw()	{}
 
-	const char	*what() const throw() override
+	virtual const char	*what() const throw()
 	{
 		return (error_message.c_str());
 	}
@@ -111,8 +108,9 @@ class	UnexceptedFlowOccured : std::exception
 {
 public:
 	UnexceptedFlowOccured(std::string flow_name)	{ error_message = "Unexcepted flow detected: " + flow_name; }
+	virtual ~UnexceptedFlowOccured() throw()		{}
 
-	const char* what() const throw() override
+	const char* what() const throw()
 	{
 		return (error_message.c_str());
 	}
@@ -123,7 +121,7 @@ private:
 class	BadRequest : std::exception
 {
 public:
-	const char* what() const throw() override
+	const char* what() const throw()
 	{
 		return ("400 Bad Request");
 	}

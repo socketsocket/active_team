@@ -1,6 +1,8 @@
 #ifndef EVENTHANDLERINSTANCE_HPP
 # define EVENTHANDLERINSTANCE_HPP
 
+class	EventHandler;
+
 # include "EventHandler.hpp"
 
 class	EventHandlerInstance
@@ -9,9 +11,8 @@ public:
 	EventHandlerInstance()	{}
 	~EventHandlerInstance()	{}
 
-	operator EventHandler() 		{ return getInstance(); }
-
-	static EventHandler	&getInstance()	{ return (instance); }
+	static void			setInstance(EventHandler *evh)	{ instance = evh; }
+	static EventHandler	&getInstance()	{ return (*instance); }
 	EventHandler		*operator->()	{ return &getInstance(); }
 
 private:
@@ -19,7 +20,7 @@ private:
 
 	EventHandlerInstance&	operator=(const EventHandlerInstance &other);
 
-	static EventHandler	instance;
+	static EventHandler	*instance;
 };
 
 #endif

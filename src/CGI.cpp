@@ -124,11 +124,11 @@ void
 	CGI::writeEvent()
 {
 	std::string	&write_buffer = dialogue->req.getBody();
-	int			write_size;
+	ssize_t		write_size;
 
 	if ((write_size = write(getFD(), &write_buffer[0], WRITE_BUFFER_SIZE)) == -1)
 		throw SystemCallError("write");
-	else if (write_size == write_buffer.size())
+	else if ((size_t)write_size == write_buffer.size())
 		dialogue->req.getBody().clear();
 	else
 		dialogue->req.getBody().erase(0, write_size);

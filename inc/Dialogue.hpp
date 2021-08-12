@@ -1,6 +1,8 @@
 #ifndef DIALOGUE_HPP
 # define DIALOGUE_HPP
 
+class	Client;
+
 # include "Client.hpp"
 # include "Request.hpp"
 # include "Response.hpp"

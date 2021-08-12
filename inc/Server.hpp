@@ -63,7 +63,7 @@ public:
 	int							deleteDirectory(std::string path);
 	
 	//getter
-	Location					getLocation(std::string uri);
+	Location					&getLocation(std::string uri);
 	unsigned int				getBodyLimit();
 	size_t						getReturnCode();
 	std::map<int, std::string>	getErrorPages();

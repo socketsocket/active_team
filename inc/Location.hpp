@@ -6,6 +6,7 @@
 # include <vector>
 # include <string>
 
+# include "Dialogue.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
 
@@ -29,14 +30,14 @@ public:
 	//getter
 	std::string					getPath();
 	std::string					getRoot();
-	std::vector<std::string>	getIndex();
+	std::vector<std::string>	&getIndex();
 	std::string					getCGIExecPath(std::string extension);
-	std::map<std::string, std::string>	getCGIInfo();
+	std::map<std::string, std::string>	&getCGIInfo();
 	bool						isAutoIndex();
 	size_t						getReturnCode();
-	std::pair<int, std::string>	getReturnInfo();
-	std::map<int, std::string>	getErrorPages();
-	std::set<Request::Method>	getMethodAllowed();
+	std::pair<int, std::string>	&getReturnInfo();
+	std::map<int, std::string>	&getErrorPages();
+	std::set<Request::Method>	&getMethodAllowed();
 
 private:
 	Location(const Location &other);

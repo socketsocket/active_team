@@ -1,8 +1,11 @@
 #ifndef EVENTHANDLER_HPP
 # define EVENTHANDLER_HPP
 
+# include <map>
 # include <vector>
 # include <string>
+
+class	PortManager;
 
 # include "FDManager.hpp"
 # include "Server.hpp"

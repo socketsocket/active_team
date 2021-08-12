@@ -9,11 +9,14 @@
 # include <iostream>
 # include <fcntl.h>
 
-# include "FDManager.hpp"
+struct	Dialogue;
+class	Location;
+class	ResponseWriter;
+
 # include "RequestReader.hpp"
 # include "ResponseWriter.hpp"
+# include "FDManager.hpp"
 # include "Dialogue.hpp"
-# include "CGI.hpp"
 # include "Location.hpp"
 # include "PortManager.hpp"
 
@@ -22,8 +25,6 @@ class	Client : public FDManager
 public:
 	Client(PortManager *pm);
 	~Client();
-
-	Client&	operator=(const Client& other);
 
 	virtual void	readEvent();
 	virtual void	writeEvent();
@@ -40,6 +41,7 @@ public:
 private:
 	Client();
 	Client(const Client& other);
+
 	Client&	operator=(const Client& other);
 
 	void 	prepareResponse(PortManager *pm, Dialogue *dial);
@@ -48,7 +50,7 @@ private:
 
 	int	openSocket(int server_socket);
 
-	PortManager				*pm;
+	PortManager			*pm;
 	RequestReader		reader;
 	ResponseWriter		writer;
 

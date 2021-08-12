@@ -25,7 +25,7 @@ public:
 	std::string		getStartLine();
 	std::string		&getBody();
 	void			setResoureFD(int fd);
-	std::map<std::string, std::string> getHeaders();
+	std::map<std::string, std::string> &getHeaders();
 
 private:
 	Response(const Response &other);

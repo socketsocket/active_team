@@ -1,8 +1,10 @@
 #ifndef RESPONSEWRITER_HPP
 # define RESPONSEWRITER_HPP
 
-# include "Response.hpp"
+class	Response;
+
 # include "Dialogue.hpp"
+# include "Response.hpp"
 
 class	ResponseWriter
 {

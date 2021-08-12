@@ -9,15 +9,14 @@
 class Request
 {
 public:
-	enum Method { GET, POST, DELETE, OTHER };
+	enum Method { GET, POST, DELETE };
 
 	Request();
 	~Request();
 
-	//필요
 	int				getStatus();
-	Method			getMethod(); // 이거 어떻게 쓰는거
-	std::string 	&getUri()	{ return (uri);	}
+	Method			getMethod();
+	std::string 	&getUri();
 	std::string 	getHttpVersion();
 	std::map<std::string, std::string>	&getHeaders();
 	std::string 	&getBody();

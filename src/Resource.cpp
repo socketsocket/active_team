@@ -32,11 +32,11 @@ void
 	Resource::writeEvent()
 {
 	std::string	&target = dialogue->req.getBody();
-	int			write_size = write(getFD(), &target[0], target.size());
+	ssize_t		write_size = write(getFD(), &target[0], target.size());
 
 	if (write_size == -1)
 		throw SystemCallError("write");
-	else if (write_size == target.size())
+	else if ((size_t)write_size == target.size())
 		target.clear();
 	else
 		target.erase(0, write_size);

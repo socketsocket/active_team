@@ -49,17 +49,25 @@ WHITE		= \033[1;37m
 SRCS	=	main.cpp
 
 SRCS	+=	\
+			CGI.cpp \
 			Client.cpp \
 			EventHandler.cpp \
 			FDManager.cpp \
+			Location.cpp \
 			PortManager.cpp \
-			Server.cpp
+			Request.cpp \
+			RequestReader.cpp \
+			Resource.cpp \
+			ResponseWriter.cpp \
+			Server.cpp \
+
+
 
 # ----------------------------------
 # Object files
 # ----------------------------------
 
-OBJS	=	$(addprefix $(DIR_OBJ)/, $(SRCS:%.c=%.o))
+OBJS	=	$(addprefix $(DIR_OBJ)/, $(SRCS:%.cpp=%.o))
 
 # ----------------------------------
 # Directories and Paths
