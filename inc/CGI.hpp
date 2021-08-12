@@ -4,16 +4,22 @@
 # include <vector>
 # include <string>
 
-class	CGI
+# include "Dialogue.hpp"
+
+class	CGI : public FDManager
 {
 public:
 	struct Query { std::string name; std::string value; };
 
-	CGI(std::string path);
+	CGI(const std::string &script_path, Dialogue *dialogue, std::string &server_name, int server_port);
 	~CGI();
 
 	void	setPrintFD(int fd);
 	void	addQuery(std::string query_string);
+
+	virtual void	readEvent();
+	virtual void	writeEvent();
+	virtual void	timerEvent();
 
 private:
 	CGI();
@@ -21,9 +27,11 @@ private:
 
 	CGI&	operator=(const CGI &other);
 
-	std::string			path;
-	int					print_fd;
-	std::vector<Query>	queries;
+	std::string							path;
+	std::vector<Query>					queries;
+	std::map<std::string, std::string>	meta_variables;
+	int									script_stdin;
+	pid_t								script_pid;
 };
 
 #endif

@@ -1,28 +1,32 @@
 #ifndef RESOURCE_HPP
 # define RESOURCE_HPP
 
+# include <vector>
+# include <queue>
 # include <string>
 
 # include "FDManager.hpp"
-# include "CGI.hpp"
+# include "Dialogue.hpp"
 
 class	Resource : FDManager
 {
 public:
 	enum Type { READ, OVERWRITE, APPEND };
 
-	Resource(std::string path, Type type);
-	Resource(CGI &cgi);
+	Resource(int fd, Dialogue *dialogue);
 	~Resource();
-
-	Resource&	operator=(const Resource &other);
 
 	virtual void	readEvent();
 	virtual void	writeEvent();
+	virtual void	timerEvent();
 
 private:
 	Resource();
 	Resource(const Resource &other);
+
+	Resource&	operator=(const Resource &other);
+
+	Dialogue *dialogue;
 };
 
 #endif

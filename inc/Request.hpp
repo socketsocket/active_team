@@ -2,7 +2,7 @@
 # define REQUEST_HPP
 
 # include <map>
-# include <vector>
+# include <deque>
 # include <string>
 
 # include "Request.hpp"
@@ -22,16 +22,16 @@ public:
 	void	addHeader(std::string key, std::string value);
 	void	addBody(std::string body);
 
-private:
-	Request(const Request &other);
-
-	Request&	operator=(const Request &other);
-
 	Method								method;
 	std::string							uri;
 	std::string							http_version;
 	std::map<std::string, std::string>	headers;
-	std::vector<std::string>			body;
+	std::deque<std::string>				body;
+
+private:
+	Request(const Request &other);
+
+	Request&	operator=(const Request &other);
 };
 
 #endif

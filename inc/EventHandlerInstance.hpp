@@ -6,8 +6,8 @@
 class	EventHandlerInstance
 {
 public:
-	EventHandlerInstance();
-	~EventHandlerInstance();
+	EventHandlerInstance()	{}
+	~EventHandlerInstance()	{}
 
 	operator EventHandler() 		{ return getInstance(); }
 

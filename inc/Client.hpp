@@ -18,6 +18,7 @@ public:
 
 	virtual void	readEvent();
 	virtual void	writeEvent();
+	virtual void	timerEvent();
 
 private:
 	Client();

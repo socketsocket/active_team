@@ -3,6 +3,9 @@
 
 # include <fcntl.h>
 
+# define READ_BUFFER_SIZE	65535
+# define WRITE_BUFFER_SIZE	65535
+
 class	FDManager
 {
 public:
@@ -13,6 +16,7 @@ public:
 
 	virtual void	readEvent() = 0;
 	virtual void	writeEvent() = 0;
+	virtual void	timerEvent() = 0;
 
 private:
 	FDManager();

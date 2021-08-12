@@ -3,6 +3,7 @@
 
 # include <exception>
 # include <string>
+# include <cerrno>
 
 class	SystemCallError : std::exception
 {
@@ -56,7 +57,19 @@ public:
 	BadDirective(std::string directive)	: ParsingError(directive + ": unknown directive") {}
 };
 
-class	NoExpectedDirective: ParsingError
+class	BadDirectiveValue : ParsingError
+{
+public:
+	BadDirectiveValue(std::string directive) : ParsingError(directive + ": unknown value") {}
+};
+
+class	DoubleDirective : ParsingError
+{
+public:
+	DoubleDirective(std::string directive) : ParsingError(directive + ": double declaration") {}
+};
+
+class	NoExpectedDirective : ParsingError
 {
 public:
 	NoExpectedDirective(std::string directive) : ParsingError("Expected `" + directive + "`") {}
@@ -93,6 +106,15 @@ public:
 	}
 private:
 	std::string	error_message;
+};
+
+class	BadRequest : std::exception
+{
+public:
+	const char* what() const throw() override
+	{
+		return ("400 Bad Request");
+	}
 };
 
 #endif

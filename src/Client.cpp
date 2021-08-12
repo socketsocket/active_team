@@ -55,4 +55,11 @@ void
 	}
 }
 
+void
+	Client::timerEvent()
+{
+	// timeout Response
+	// Client Destruct
+}
+
 /* private */

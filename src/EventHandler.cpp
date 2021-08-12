@@ -223,13 +223,11 @@ void
 			itr != portManagers.end();
 			++itr)
 	{
-		registerFD(itr->second);
-		addReadEvent(itr->second->getFD());
+		enableReadEvent(itr->second->getFD());
 	}
 
 	struct kevent	event_list[MAX_EVENT_SIZE];
 	struct kevent	*curr_event;
-	FDManager		*fd_handler;
 
 	while (true)
 	{
@@ -241,61 +239,62 @@ void
 		for (int i = 0; i < num_of_event; ++i)
 		{
 			curr_event = event_list + i;
-			fd_handler = fds[curr_event->ident];
-			if (dynamic_cast<PortManager *>(fd_handler))
-			{
-				PortManager	*pm = dynamic_cast<PortManager *>(fd_handler);
-
-				if (curr_event->filter & EVFILT_READ)
-				{
-					int			client_fd = pm->acceptClient();
-
-					registerFD(new Client(client_fd, pm));
-					addReadEvent(client_fd);
-				}
-				else
-					throw UnknownEventIdentifier();
-			}
-			else if (dynamic_cast<Client *>(fd_handler))
-			{
-				Client	*client = dynamic_cast<Client *>(fd_handler);
-
-				if (curr_event->filter & EVFILT_READ)
-				{
-					client->readRequest();
-				}
-				else if (curr_event->filter & EVFILT_WRITE)
-				{
-					client->writeResponse();
-				}
-				else if (curr_event->filter & EVFILT_TIMER)
-				{
-					client->write408();
-					unregisterFD(client->getFD());
-					delete client;
-				}
-				else
-					throw UnknownEventIdentifier();
-			}
-			else if (dynamic_cast<Resource *>(fd_handler))
-			{
-				Resource	*resource = dynamic_cast<Resource *>(fd_handler);
-
-				if (curr_event->filter & EVFILT_READ)
-				{
-					resource->readResource();
-				}
-				else if (curr_event->filter & EVFILT_WRITE)
-				{
-					resource->writeResource();
-				}
-				else
-					throw UnknownEventIdentifier();
-			}
-			else
-				throw UnknownEventIdentifier();
+			if (curr_event->filter == EVFILT_READ)
+				fds[curr_event->ident]->readEvent();
+			else if (curr_event->filter == EVFILT_WRITE)
+				fds[curr_event->ident]->writeEvent();
+			else if (curr_event->filter == EVFILT_TIMER)
+				fds[curr_event->ident]->timerEvent();
 		}
 	}
+}
+
+
+
+void
+	EventHandler::registerFD(FDManager *fdm)
+{
+	if (fdm->getFD() < 0)
+		throw BadFileDescriptor();
+	if (fds.size() < fdm->getFD())
+		fds.resize(fdm->getFD(), NULL);
+	fds[fdm->getFD()] = fdm;
+}
+
+void
+	EventHandler::unregisterFD(FDManager *fdm)
+{
+	fds.at(fdm->getFD()) = NULL;
+}
+
+void
+	EventHandler::enableReadEvent(int fd)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw SystemCallError("kevent");
+}
+
+void
+	EventHandler::enableWriteEvent(int fd)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT | EV_ENABLE, 0, 0, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw SystemCallError("kevent");
+}
+
+void
+	EventHandler::setTimerEvent(int fd, int second)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, second, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw SystemCallError("kevent");
 }
 
 /* private */

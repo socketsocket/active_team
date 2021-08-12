@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "EventHandlerInstance.hpp"
 #include "Exception.hpp"
 #include "PortManager.hpp"
 #include "Client.hpp"
@@ -43,12 +44,20 @@ void
 	PortManager::readEvent()
 {
 	Client	*client = new Client(this);
+
+	EventHandlerInstance::getInstance().enableReadEvent(client->getFD());
 }
 
 void
 	PortManager::writeEvent()
 {
 	throw UnexceptedEventOccured("PortManager write event");
+}
+
+void
+	PortManager::timerEvent()
+{
+	throw UnexceptedEventOccured("PortManager timer event");
 }
 
 /* priavte */

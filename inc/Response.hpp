@@ -2,7 +2,7 @@
 # define RESPONSE_HPP
 
 # include <map>
-# include <queue>
+# include <deque>
 
 # include "Resource.hpp"
 
@@ -16,19 +16,16 @@ public:
 
 	static const Message status_message[63];
 
-private:
-	Response(const Response &other);
-
-	Response&	operator=(const Response &other);
-
-	Resource	*resource;
-
 	std::string	http_version;
 	int			status_code;
 
 	std::map<std::string, std::string>	header;
-	std::queue<std::string>				body;
+	std::deque<std::string>				body;
 
+private:
+	Response(const Response &other);
+
+	Response&	operator=(const Response &other);
 };
 
 const Response::Message Response::status_message[] = {

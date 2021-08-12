@@ -12,10 +12,7 @@ class	Location
 {
 public:
 	Location();
-	Location(const Location &other);
 	~Location();
-
-	Location&	operator=(const Location &other);
 
 	void	setRoot(std::string root_path);
 	void	setAutoindex(std::string on_off_string);
@@ -27,6 +24,10 @@ public:
 	void	addMethod(std::string method);
 
 private:
+	Location(const Location &other);
+
+	Location&	operator=(const Location &other);
+
 	std::string							path;
 	std::string							root;
 	std::vector<std::string>			index;

@@ -29,7 +29,7 @@ public:
 
 	void	enableReadEvent(int fd);
 	void	enableWriteEvent(int fd);
-	void	setTimerEvent(int fd, int time);
+	void	setTimerEvent(int fd, int second);
 
 private:
 	EventHandler();

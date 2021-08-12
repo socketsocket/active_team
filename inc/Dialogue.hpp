@@ -1,6 +1,7 @@
 #ifndef DIALOGUE_HPP
 # define DIALOGUE_HPP
 
+# include "Client.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
 
@@ -17,6 +18,7 @@ public:
 	Dialogue() : status(ReadingRequest) {}
 	~Dialogue() {}
 
+	Client		*client;
 	Request		req;
 	Response	res;
 	Status		status;
