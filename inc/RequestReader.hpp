@@ -3,16 +3,21 @@
 
 # include "Dialogue.hpp"
 # include "Client.hpp"
-
-#define PARSING_HEADER 0
-#define PARSING_BODY 1
-
-#define	CHUNKED 2
-#define CONTENT_LENGTH 3
+# include "algorithm"
 
 class	RequestReader
 {
 public:
+	enum	Status {
+		PARSING_START,
+		PARSING_HEADER,
+		PARSING_BODY
+	};
+	enum	Status {
+		NOBODY,
+		CHUNKED,
+		CONTENT_LENGTH
+	};
 	RequestReader(int client_socket);
 	~RequestReader();
 
@@ -21,11 +26,11 @@ public:
 	// void		readRequest();
 	Dialogue*	parseRequest();
 
-	Request*	makeStartLine(Request *req);
-	Request* 	makeReqHeader(Request *req);
-	void		checkBody(Request *req);
-	Request*	makeChunkedBody(Request *req);
-	Request*	makeLengthBody(Request *req);
+	void	makeStartLine(Request &req);
+	void 	makeReqHeader(Request &req);
+	void	checkBody(Request &req);
+	void	makeChunkedBody(Request &req);
+	void	makeLengthBody(Request &req);
 
 	std::string	getRawRequest();
 

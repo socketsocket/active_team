@@ -27,6 +27,7 @@ public:
 	std::string		getStartLine();
 	std::string		getBody();
 	void			setResoureFD(int fd);
+	std::map<std::string, std::string> getHeaders();
 
 private:
 	// static const Message status_message[63];
@@ -40,8 +41,8 @@ private:
 	// std::queue<std::string>			body;
 	std::string							body;
 
-	Resource	*resource;
-	int		resourse_fd;
+	// Resource	*resource;
+	// int		resourse_fd;
 };
 
 #endif

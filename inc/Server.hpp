@@ -9,6 +9,8 @@
 # include "Response.hpp"
 # include "Location.hpp"
 # include "Exception.hpp"
+# include "Dialogue.hpp"
+# include "EventHandlerInstance.hpp"
 
 # include <sys/stat.h>
 # include <dirent.h>
@@ -52,18 +54,20 @@ public:
 	std::string	makeHTMLPage(std::string body);
 	std::string	generateErrorPage(size_t error_code);
 	
-	Response	makeErrorResponse(Server &server, Location &location, size_t);
-	Response	makeReturnResponse(size_t);
+	void		makeErrorResponse(Dialogue *, Location &location, size_t);
+	void		makeReturnResponse(Dialogue *, Location &location, size_t);
 	std::string	makeAutoIndexPage(std::string path, std::string uri, Location &location);
-	Response	makeGETResponse(Server &, Location &, std::string);
-	Response	makePOSTResponse(Server &, Location &, std::string);
-	Response	makeDELETEResponse(Server &, Location &, std::string);
+	void		makeGETResponse(Dialogue *, Location &, std::string);
+	void		makePOSTResponse(Dialogue *, Location &, std::string);
+	void		makeDELETEResponse(Dialogue *, Location &, std::string);
 	Response	makeCGIResponse();
 
-	std::string					statusMessage(size_t error_code);
+	std::string					statusMessage(size_t code);
 	std::string					contentTypeHeader(std::string extension);
 	std::string					dateHeader();
-	
+	std::string					lastModifiedHeader();
+	std::string					connectionHeader(Request &req);
+
 	bool						isAutoIndex();
 	int							checkPath(std::string path);
 	int							deleteDirectory(std::string path);

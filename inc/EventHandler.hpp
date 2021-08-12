@@ -22,6 +22,13 @@ public:
 
 	EventHandler&	operator=(const EventHandler& other);
 
+	//임시로
+	void	enableReadEvent(int);
+	void	enableWriteEvent(int);
+	void	registerFD(int);
+	void	unregisterFD(int);
+	void	setTimerEvent(int);
+
 	void	start();
 
 private:

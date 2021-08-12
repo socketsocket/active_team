@@ -35,8 +35,10 @@ public:
 	std::string					getRoot();
 	std::vector<std::string>	getIndex();
 	std::string					getCGIExecPath(std::string extension);
+	std::map<std::string, std::string>	getCGIInfo();
 	bool						isAutoIndex();
 	size_t						getReturnCode();
+	std::pair<int, std::string>	getReturnInfo();
 	std::map<int, std::string>	getErrorPages();
 	std::set<Request::Method>	getMethodAllowed();
 

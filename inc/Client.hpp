@@ -10,8 +10,6 @@
 // # include <fcntl.h>
 // # include <exception>
 
-# define PARSING_HEADER 0
-# define PARSING_BODY 1
 # define REQUEST_COMPLETE 3
 # define MAKING_RESPONSE 4
 # define NEED_RESOURCE 6
@@ -24,12 +22,15 @@
 # include <sstream>
 # include <string>
 # include <iostream>
+# include <fcntl.h>
 
 # include "FDHandler.hpp"
 # include "RequestReader.hpp"
-# include "RequestProcessor.hpp"
 # include "ResponseWriter.hpp"
 # include "Dialogue.hpp"
+# include "CGI.hpp"
+# include "Location.hpp"
+# include "PortManager.hpp"
 
 class	Client : public FDHandler
 {
@@ -39,15 +40,17 @@ public:
 
 	Client&	operator=(const Client& other);
 
-	void	readRequest();
+	void	readEvent();
 	void	writeResponse();
+
+	void 	prepareResponse(PortManager *pm, Dialogue *dial);
+	int		isCGIRequest(Request &req, Location &location);
 
 private:
 	Client();
 	Client(const Client& other);
 
 	RequestReader		reader;
-	RequestProcessor	processor;
 	ResponseWriter		writer;
 
 	std::queue<Dialogue *>	dialogues;

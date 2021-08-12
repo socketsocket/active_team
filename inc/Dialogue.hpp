@@ -11,21 +11,26 @@ public:
 	{
 		ReadingRequest,
 		Processing,
+		ReadyToResponse,
 		WritingResponse,
 	};
 
-	Dialogue() : req(NULL), res(NULL), status(ReadingRequest) {}
+	Dialogue() : status(ReadingRequest) {}
 	~Dialogue() {}
 
-	Request		*getReq();
+	Request		&getReq();
+	Response	&getRes();
+
+	void		setStatus(Status status);
+	Status		getStatus();
 
 private:
 	Dialogue(const Dialogue &other);
 
 	Dialogue&	operator=(const Dialogue &other);
 
-	Request		*req;
-	Response	*res;
+	Request		req;
+	Response	res;
 	Status		status;
 };
 

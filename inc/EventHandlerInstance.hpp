@@ -13,14 +13,14 @@ public:
 
 	EventHandler	*operator->()	{ return &getInstance(); }
 
-	EventHandler	&getInstance()	{ return (instance); }
+	static EventHandler	&getInstance()	{ return (instance); }
 
 private:
 	EventHandlerInstance(const EventHandlerInstance &other);
 
 	EventHandlerInstance&	operator=(const EventHandlerInstance &other);
 
-	EventHandler	instance;
+	static EventHandler	instance;
 };
 
 #endif

@@ -62,6 +62,12 @@ public:
 	NoExpectedDirective(std::string directive) : ParsingError("Expected `" + directive + "`") {}
 };
 
+class	BadRequest : ParsingError
+{
+public:
+	BadRequest(int error_code)	: ParsingError(error_code + ": bad request") {}
+};
+
 class	UnexceptedEOF : ParsingError
 {
 public:

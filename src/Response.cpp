@@ -33,9 +33,9 @@ void
 }
 
 void
-	Response::addHeader(std::string, std::string)
+	Response::addHeader(std::string key, std::string val)
 {
-
+	this->header.insert(make_pair(key, val));
 }
 
 std::string

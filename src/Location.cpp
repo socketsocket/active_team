@@ -61,6 +61,11 @@ std::string					Location::getCGIExecPath(std::string extension)
 	return (iter->second);
 }
 
+std::map<std::string, std::string>	Location::getCGIInfo()
+{
+	return (cgi_info);
+}
+
 bool						Location::isAutoIndex()
 {
 	return (auto_index);

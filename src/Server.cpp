@@ -76,11 +76,10 @@ std::string
 	return (html);
 }
 
-Response Server::makeErrorResponse(Server &server, Location &location, size_t error_code)
+void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_code)
 {
-	struct kevent event;
-
-	Response response;
+	Response &response = dial->getRes();
+	response.makeStartLine("HTTP/1.1", error_code, this->statusMessage(error_code));
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
 	response.addHeader(std::string("Content-Type"), this->contentTypeHeader(".html"));
@@ -90,8 +89,8 @@ Response Server::makeErrorResponse(Server &server, Location &location, size_t er
 
 	if (location.getErrorPages().count(error_code))
 		fd = open(location.getErrorPages()[error_code].c_str(), O_RDONLY);
-	else if (server.getErrorPages().count(error_code))
-		fd = open(server.getErrorPages()[error_code].c_str(), O_RDONLY);
+	else if (this->getErrorPages().count(error_code))
+		fd = open(this->getErrorPages()[error_code].c_str(), O_RDONLY);
 	else
 		response.addBody(this->generateErrorPage(error_code));
 
@@ -99,19 +98,21 @@ Response Server::makeErrorResponse(Server &server, Location &location, size_t er
 		response.addBody(this->generateErrorPage(error_code));
 	else
 	{
-		response.setResoureFD(fd);
-
-		EV_SET(&event, fd, EVFILT_READ, EV_ADD, NULL, NULL, NULL);
-		return (response);
+		Resource	resource(fd, dial);
+		EventHandlerInstance::getInstance().enableReadEvent(resource.getFD());
+		return ;
 	}
 
-	EV_SET(&event, /*client fd*/, EVFILT_WRITE, EV_ADD, NULL, NULL, NULL);
-	return (response);
+	dial->setStatus(Dialogue::ReadyToResponse);
 }
 
-Response	Server::makeReturnResponse(size_t)
+void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t return_code)
 {
-
+	Response &response = dial->getRes();
+	response.makeStartLine("HTTP/1.1", return_code, this->statusMessage(return_code));
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	response.addHeader(std::string("Location"), location.getReturnInfo().second);
 }
 
 
@@ -130,7 +131,6 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 	body += "<hr>\r\n";
 	body += "<pre>\r\n";
 
-	//이전 함수에서 디렉토리가 안열리면 에러처리를 했으니 여기선 열린 경우만 생각해도 될 듯
 	if((dir = opendir(path.c_str())) == 0)
 		return (this->generateErrorPage(500));
 	
@@ -141,7 +141,7 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 			name += '/';
 		body += "<a href=\"" + name + "\">" + name + "</a><br>\n";
 
-		//시간 dd-mm-yyyy hh:mm
+		//dd-mm-yyyy hh:mm
 		time_t	curr_time = time(NULL);
 		struct	tm*	timeinfo;
 		char	buffer[64];
@@ -160,11 +160,10 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 	return (body);
 }
 
-//스타트라인은 어디서 만들지 ????????????????????????
 
-Response Server::makeGETResponse(Server &server, Location &location, std::string path)
+void Server::makeGETResponse(Dialogue *dial, Location &location, std::string path)
 {
-	Response response;
+	Response &response = dial->getRes();
 	response.addHeader("Date", this->dateHeader());
 	response.addHeader("Server", "hsonseyu Server");
 
@@ -172,14 +171,14 @@ Response Server::makeGETResponse(Server &server, Location &location, std::string
 
 	if (checkPath(path) == Directory)
 	{
-		//우선 Index file 들 확인
+		//Check Index Files
 		if (path[path.length() - 1] != '/')
 			path += '/';
 		struct stat buf;
 		bool found = false;
 		for (std::vector<std::string>::iterator iter = location.getIndex().begin(); iter != location.getIndex().end(); iter++)
 		{
-			if (stat((path + *iter).c_str(), &buf) == 0)	//여기 때문에 getIndex 에서 const 지움
+			if (stat((path + *iter).c_str(), &buf) == 0)
 			{
 				found = true;
 				path = path + *iter;
@@ -193,27 +192,26 @@ Response Server::makeGETResponse(Server &server, Location &location, std::string
 			response.addHeader("Content-Length", std::to_string(response.getBody().length()));
 			//200 ok
 		}
-		else
-			this->makeErrorResponse(server, location, 404);
+		if (checkPath(path) == NotFound || checkPath(path) == Directory)
+			return this->makeErrorResponse(dial, location, 404);
 	}
 
 	//경로가 특정 파일로 지정됨! 오픈!
-	int	fd;
-	if (fd = open(path.c_str(), O_RDONLY) == -1)
-		this->makeErrorResponse(server, location, 404);
+	int	fd = open(path.c_str(), O_RDONLY);
+	if (fd == -1)
+		return this->makeErrorResponse(dial, location, 404);
 
-	response.setResoureFD(fd);
-	struct kevent event;
+	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 
-	EV_SET(&event, fd, EVFILT_READ, EV_ADD, NULL, NULL, NULL);
-	return (response);
+	Resource resource(fd, dial);
+	EventHandlerInstance::getInstance().enableReadEvent(resource.getFD());
 }
 
-Response Server::makePOSTResponse(Server &server, Location &location, std::string resource_path)
+
+void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string resource_path)
 {
 	//POST 는 대부분 cgi 처리를 원함. cgi 가 아닌 서버에서의 POST 의 경우 파일 생성
-	Response response;
-	Resource resource;
+	Response &response = dial->getRes();
 
 	response.addHeader("Date", this->dateHeader());
 	response.addHeader("Server", "hsonseyu Server");
@@ -222,27 +220,26 @@ Response Server::makePOSTResponse(Server &server, Location &location, std::strin
 	if (checkPath(resource_path) == File) //있으면 append
 	{
 		if ((fd = open(resource_path.c_str(), O_WRONLY | O_APPEND | O_NONBLOCK, 0644)) == -1)
-			this->makeErrorResponse(server, location, 500);
+			return this->makeErrorResponse(dial, location, 500);
 	}
 	else if (checkPath(resource_path) == NotFound) //없으면 create
 	{
 		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK)) == -1)
-			this->makeErrorResponse(server, location, 500);
+			return this->makeErrorResponse(dial, location, 500);
 	}
 	else
-		this->makeErrorResponse(server, location, 403);
+		return this->makeErrorResponse(dial, location, 403);
 
-	response.setResoureFD(fd);
-	struct kevent event;
+	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
 
-	EV_SET(&event, fd, EVFILT_WRITE, EV_ADD, NULL, NULL, NULL); //write event!
-	return (response);
+	Resource resource(fd, dial);
+	EventHandlerInstance::getInstance().enableReadEvent(resource.getFD());
 }
 
-Response Server::makeDELETEResponse(Server &server, Location &location, std::string resource_path)
+void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string resource_path)
 {
 	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
-	Response response;
+	Response &response = dial->getRes();
 
 	response.addHeader("Date", this->dateHeader());
 	response.addHeader("Server", "hsonseyu Server");
@@ -255,9 +252,8 @@ Response Server::makeDELETEResponse(Server &server, Location &location, std::str
 	else if (checkPath(resource_path) == File)
 		unlink(resource_path.c_str());
 
-	response.addBody(this->makeHTMLPage(/*body 내용*/));
-
-	return (response);
+	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+	response.addBody(this->makeHTMLPage("File deleted."));
 }
 
 int		Server::checkPath(std::string path)
@@ -275,9 +271,9 @@ int		Server::checkPath(std::string path)
 	}
 }
 
+//디렉토리 오픈해서 다 지우는데 그 안에서도 파일이면 unlink, 디렉토리면 이 과정 반복
 int		Server::deleteDirectory(std::string path)
 {
-	//디렉토리 오픈해서 하나하나 다 지우고 그 안에서도 파일이면 unlink, 디렉토리면 이 과정 반복
 	DIR *dir;
 	struct dirent *dir_read;
 
@@ -301,7 +297,7 @@ int		Server::deleteDirectory(std::string path)
 	return ;
 }
 
-std::string	Server::statusMessage(size_t error_code) {
+std::string	Server::statusMessage(size_t code) {
 	std::map<size_t, std::string> status;
 
 	status[100] = "Continue";
@@ -356,10 +352,10 @@ std::string	Server::statusMessage(size_t error_code) {
 	status[510] = "Not Extened";
 	status[511] = "Network Authentication Required";
 	status[599] = "Network Connect Timeout Error";
-	if (status.count(error_code) == 0)
+	if (status.count(code) == 0)
 		return 0;
 	else
-		return status[error_code];
+		return status[code];
 }
 
 std::string	Server::contentTypeHeader(std::string extension) {
@@ -438,4 +434,26 @@ std::string
 
 	strftime(buffer, 4096, "%a, %d %b %Y %H:%M:%S GMT", time_info);
 	return (std::string(buffer));
+}
+
+std::string
+	Server::lastModifiedHeader(void) 
+{
+	struct stat	sb;
+	struct tm*	timeinfo = localtime(&sb.st_mtime);
+	char buffer[4096];
+
+	strftime(buffer, 4096, "%a, %d, %b %Y %X GMT", timeinfo);
+
+	return (std::string(buffer));
+}
+
+std::string
+	Server::connectionHeader(Request &req)
+{
+	std::map<std::string, std::string>::iterator iter = req.getHeaders().find("Connection-Encoding");
+	if (iter != req.getHeaders().end())
+		return (iter->second);
+	else
+		return ("keep-alive");
 }
