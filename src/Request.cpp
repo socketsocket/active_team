@@ -1,4 +1,5 @@
 #include "Request.hpp"
+#include "Exception.hpp"
 
 Request::Request()
 {
@@ -28,7 +29,7 @@ int		Request::getStatus()
 // 	return (method);
 // }
 
-std::string Request::getUri()
+std::string& Request::getUri()
 {
 	return (uri);
 }
@@ -38,13 +39,13 @@ std::string Request::getHttpVersion()
 	return (http_version);
 }
 
-std::map<std::string, std::string>
+std::map<std::string, std::string>&
 	Request::getHeaders()
 {
 	return (headers);
 }
 
-std::string	Request::getBody()
+std::string&	Request::getBody()
 {
 	return (body);
 }
@@ -59,12 +60,14 @@ void	Request::setStatus(int status)
 	this->status = status;
 }
 
-// void	Request::setMethod()
-// {
-// 	return (method);
-// }
+void
+	Request::setMethod(Method method)
+{
+	this->method = method;
+}
 
-void Request::setUri(std::string uri)
+void
+	Request::setUri(std::string uri)
 {
 	this->uri = uri;
 }
@@ -76,7 +79,8 @@ void Request::setHttpVersion(std::string version)
 
 void Request::setHeaders(std::string key, std::string val)
 {
-	this->headers.insert(make_pair(key,val));
+	if (headers.insert(std::make_pair(key, val)).second == false)
+		throw BadRequest();
 }
 
 void Request::addBody(std::string body)

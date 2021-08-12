@@ -25,25 +25,15 @@
 
 class Server
 {
-private:
-	std::map<std::string, Location>	locations;
-	std::map<int, std::string>		error_page;
-	bool							auto_index;
-	unsigned long					body_limit; // 0 ~ string::max_size(), default: string::max_size()
-	std::pair<int, std::string>		return_info;
-
 public:
 	Server();
-	Server(const Server& s);
 	~Server();
-
-	Server& operator= (const Server& s);
 
 	//config parsing
 	int			addLocation(std::string path, Location *loc); // Success : 0, Fail : 1
 	int			addErrorPage(int error_code, std::string page_path); // Success : 0, Fail : 1
 
-	int			setBodyLimit(unsigned long limit);
+	int			setBodyLimit(int limit);
 	void		setAutoindex(std::string on_off_string);
 	int			setReturnInfo(int code, std::string uri);
 	
@@ -72,12 +62,24 @@ public:
 	int							checkPath(std::string path);
 	int							deleteDirectory(std::string path);
 	
-
 	//getter
 	Location					getLocation(std::string uri);
 	unsigned int				getBodyLimit();
 	size_t						getReturnCode();
 	std::map<int, std::string>	getErrorPages();
+
+
+private:
+	Server(const Server& s);
+
+	Server& operator= (const Server& s);
+	std::map<std::string, Location>	locations;
+	std::map<int, std::string>		error_page;
+
+	bool							auto_index;
+	int								body_limit;
+	std::pair<int, std::string>		return_info;
+
 };
 
 #endif

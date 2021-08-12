@@ -4,60 +4,32 @@
 # include <map>
 # include <string>
 
-# include "FDHandler.hpp"
+# include "FDManager.hpp"
 # include "Server.hpp"
 
 # define PORT_BACKLOG	10
 
-class	PortManager : public FDHandler
+class	PortManager : public FDManager
 {
 public:
-	/* ---------------------------------------- */
-	/*         Constructor / Destructor         */
-	/* ---------------------------------------- */
-
-	PortManager(int port) : FDHandler(openSocket(port)) {}
+	PortManager(int port);
 	virtual	~PortManager();
-
-	/* ---------------------------------------- */
-	/*               Initializer                */
-	/* ---------------------------------------- */
 
 	void	addServer(std::string server_name, Server *server);
 
-	/* ---------------------------------------- */
-	/*             TCP Communicator             */
-	/* ---------------------------------------- */
+	virtual void	readEvent();
+	virtual void	writeEvent();
+	virtual void	timerEvent();
 
-	int		acceptClient();	// return client fd
-
-	Server	getServer(std::string);
+	Server*	getServer(std::string hostname);
 
 private:
-	/* ---------------------------------------- */
-	/*         Constructor / Destructor         */
-	/* ---------------------------------------- */
-
 	PortManager();
 	PortManager(const PortManager &other);
 
-	/* ---------------------------------------- */
-	/*               Initializer                */
-	/* ---------------------------------------- */
-
-	int	openSocket(int port);
-
-	/* ---------------------------------------- */
-	/*                 Operator                 */
-	/* ---------------------------------------- */
-
 	PortManager&	operator=(const PortManager &other);
 
-	/* ---------------------------------------- */
-	/*             Member Variables             */
-	/* ---------------------------------------- */
-
-	std::map<std::string, Server *>	servers;
+	std::vector<std::pair<std::string, Server *> >	servers; //pair(hostname, server) 로 저장하고 find_if로 찾기 - default
 };
 
 #endif

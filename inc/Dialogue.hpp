@@ -1,34 +1,25 @@
 #ifndef DIALOGUE_HPP
 # define DIALOGUE_HPP
 
+# include "Client.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
 
-class	Dialogue
+struct	Dialogue
 {
 public:
 	enum	Status
 	{
 		ReadingRequest,
 		Processing,
-		ReadyToResponse,
 		WritingResponse,
+		ReadyToResponse
 	};
 
 	Dialogue() : status(ReadingRequest) {}
 	~Dialogue() {}
 
-	Request		&getReq();
-	Response	&getRes();
-
-	void		setStatus(Status status);
-	Status		getStatus();
-
-private:
-	Dialogue(const Dialogue &other);
-
-	Dialogue&	operator=(const Dialogue &other);
-
+	Client		*client;
 	Request		req;
 	Response	res;
 	Status		status;

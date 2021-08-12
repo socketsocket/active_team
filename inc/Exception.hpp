@@ -3,6 +3,7 @@
 
 # include <exception>
 # include <string>
+# include <cerrno>
 
 class	SystemCallError : std::exception
 {
@@ -68,10 +69,64 @@ public:
 	BadRequest(int error_code)	: ParsingError(error_code + ": bad request") {}
 };
 
+class	BadDirectiveValue : ParsingError
+{
+public:
+	BadDirectiveValue(std::string directive) : ParsingError(directive + ": unknown value") {}
+};
+
+class	DoubleDirective : ParsingError
+{
+public:
+	DoubleDirective(std::string directive) : ParsingError(directive + ": double declaration") {}
+};
+
+class	NoExpectedDirective : ParsingError
+{
+public:
+	NoExpectedDirective(std::string directive) : ParsingError("Expected `" + directive + "`") {}
+};
+
 class	UnexceptedEOF : ParsingError
 {
 public:
 	UnexceptedEOF() : ParsingError("Unexcepted EOF") {}
+};
+
+class	UnexceptedEventOccured : std::exception
+{
+public:
+	UnexceptedEventOccured(std::string event_object)	{ error_message = "Unexcepted event occured: " + event_object; }
+
+	const char	*what() const throw() override
+	{
+		return (error_message.c_str());
+	}
+
+private:
+	std::string	error_message;
+};
+
+class	UnexceptedFlowOccured : std::exception
+{
+public:
+	UnexceptedFlowOccured(std::string flow_name)	{ error_message = "Unexcepted flow detected: " + flow_name; }
+
+	const char* what() const throw() override
+	{
+		return (error_message.c_str());
+	}
+private:
+	std::string	error_message;
+};
+
+class	BadRequest : std::exception
+{
+public:
+	const char* what() const throw() override
+	{
+		return ("400 Bad Request");
+	}
 };
 
 #endif

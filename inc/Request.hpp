@@ -12,22 +12,19 @@ public:
 	enum Method { GET, POST, DELETE, OTHER };
 
 	Request();
-	Request(const Request& req);
 	~Request();
-
-	Request& operator= (const Request &req);
 
 	//필요
 	int				getStatus();
 	Method			getMethod(); // 이거 어떻게 쓰는거
-	std::string 	getUri()	{ return (uri);	}
+	std::string 	&getUri()	{ return (uri);	}
 	std::string 	getHttpVersion();
-	std::map<std::string, std::string>	getHeaders();
-	std::string 	getBody();
+	std::map<std::string, std::string>	&getHeaders();
+	std::string 	&getBody();
 	int				getBodyType();
 
 	void			setStatus(int status);
-	void			setMethod(int method);
+	void			setMethod(Method method);
 	void			setUri(std::string uri);
 	void			setHttpVersion(std::string version);
 	void			setHeaders(std::string key, std::string val);
@@ -35,6 +32,10 @@ public:
 	void			setBodyType(int type);
 
 private:
+	Request(const Request& req);
+
+	Request& operator= (const Request &req);
+	
 	int				status;
 
 	Method			method;

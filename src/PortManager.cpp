@@ -1,29 +1,15 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "EventHandlerInstance.hpp"
 #include "Exception.hpp"
 #include "PortManager.hpp"
+#include "Client.hpp"
 
-/* public */
+/* static */
 
-void
-	PortManager::addServer(std::string server_name, Server *server)
-{
-	servers.insert(std::pair<std::string, Server*>(server_name, server));
-}
-
-int	PortManager::acceptClient()
-{
-	int	client_fd;
-
-	if ((client_fd = accept(this->getFD(), NULL, NULL)) == -1)
-		throw SystemCallError("accept");
-	return (client_fd);
-}
-
-/* private */
-
-int	PortManager::openSocket(int port)
+static int
+	openSocket(int port)
 {
 	struct sockaddr_in	server_addr;
 	int					server_socket;
@@ -42,3 +28,36 @@ int	PortManager::openSocket(int port)
 
 	return (server_socket);
 }
+
+/* public */
+
+PortManager::PortManager(int port) : FDManager(openSocket(port))
+{}
+
+void
+	PortManager::addServer(std::string server_name, Server *server)
+{
+	servers.push_back(std::pair<std::string, Server*>(server_name, server));
+}
+
+void
+	PortManager::readEvent()
+{
+	Client	*client = new Client(this);
+
+	EventHandlerInstance::getInstance().enableReadEvent(client->getFD());
+}
+
+void
+	PortManager::writeEvent()
+{
+	throw UnexceptedEventOccured("PortManager write event");
+}
+
+void
+	PortManager::timerEvent()
+{
+	throw UnexceptedEventOccured("PortManager timer event");
+}
+
+/* priavte */

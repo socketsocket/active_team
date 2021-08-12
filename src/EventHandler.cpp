@@ -8,6 +8,11 @@
 #include "EventHandler.hpp"
 #include "Exception.hpp"
 
+<<<<<<< HEAD
+=======
+/* static */
+
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 static inline void
 	tolower(std::string &s)
 {
@@ -170,6 +175,11 @@ static void
 	}
 }
 
+<<<<<<< HEAD
+=======
+/* public */
+
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 EventHandler::EventHandler(std::string config_file_path)
 {
 	std::ifstream			config_file(config_file_path);
@@ -219,13 +229,20 @@ void
 			itr != portManagers.end();
 			++itr)
 	{
+<<<<<<< HEAD
 		registerFD(itr->second);
 		addReadEvent(itr->second->getFD());
+=======
+		enableReadEvent(itr->second->getFD());
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 	}
 
 	struct kevent	event_list[MAX_EVENT_SIZE];
 	struct kevent	*curr_event;
+<<<<<<< HEAD
 	FDHandler		*fd_handler;
+=======
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 
 	while (true)
 	{
@@ -237,6 +254,7 @@ void
 		for (int i = 0; i < num_of_event; ++i)
 		{
 			curr_event = event_list + i;
+<<<<<<< HEAD
 			fd_handler = fds[curr_event->ident];
 			if (dynamic_cast<PortManager *>(fd_handler))
 			{
@@ -293,3 +311,62 @@ void
 		}
 	}
 }
+=======
+			if (curr_event->filter == EVFILT_READ)
+				fds[curr_event->ident]->readEvent();
+			else if (curr_event->filter == EVFILT_WRITE)
+				fds[curr_event->ident]->writeEvent();
+			else if (curr_event->filter == EVFILT_TIMER)
+				fds[curr_event->ident]->timerEvent();
+		}
+	}
+}
+
+void
+	EventHandler::registerFD(FDManager *fdm)
+{
+	if (fdm->getFD() < 0)
+		throw BadFileDescriptor();
+	if (fds.size() < fdm->getFD())
+		fds.resize(fdm->getFD(), NULL);
+	fds[fdm->getFD()] = fdm;
+}
+
+void
+	EventHandler::unregisterFD(FDManager *fdm)
+{
+	fds.at(fdm->getFD()) = NULL;
+}
+
+void
+	EventHandler::enableReadEvent(int fd)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw SystemCallError("kevent");
+}
+
+void
+	EventHandler::enableWriteEvent(int fd)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT | EV_ENABLE, 0, 0, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw SystemCallError("kevent");
+}
+
+void
+	EventHandler::setTimerEvent(int fd, int second)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, second, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw SystemCallError("kevent");
+}
+
+/* private */
+>>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7

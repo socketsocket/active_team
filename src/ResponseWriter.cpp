@@ -18,20 +18,24 @@ ResponseWriter& ResponseWriter::operator=(const ResponseWriter &ref)
 	return (*this);
 }
 
-void	ResponseWriter::holdResponse(Response *res)
+void	ResponseWriter::pushResponse(Response &res)
 {
-	this->entire_response += res->getStartLine();
-	this->entire_response += "\r\n";
-	
-	for (std::map<std::string, std::string>::iterator iter = res->getHeaders().begin(); iter != res->getHeaders().end(); iter++)
-	{
-		this->entire_response += iter->first;
-		this->entire_response += ": ";
-		this->entire_response += iter->second;
-		this->entire_response += "\r\n";
-	}
-	this->entire_response += "\r\n";
+	std::string	entire_response;
 
-	this->entire_response += res->getBody();
+	entire_response += res.getStartLine();
+	entire_response += "\r\n";
+	
+	for (std::map<std::string, std::string>::iterator iter = res.getHeaders().begin(); iter != res.getHeaders().end(); iter++)
+	{
+		entire_response += iter->first;
+		entire_response += ": ";
+		entire_response += iter->second;
+		entire_response += "\r\n";
+	}
+	entire_response += "\r\n";
+
+	entire_response += res.getBody();
+
+	this->buffer.push_back(entire_response);
 	
 }

@@ -1,5 +1,5 @@
 #ifndef LOCATION_HPP
-#define LOCATION_HPP
+# define LOCATION_HPP
 
 # include <map>
 # include <set>
@@ -13,13 +13,9 @@ class	Location
 {
 public:
 	Location();
-	// Location(std::string path) {}
-	Location(const Location &other);
 	~Location();
 
-	Location&	operator=(const Location &other);
-
-	void	setRoot(std::string root_path) { root = root_path; }
+	void	setRoot(std::string root_path);
 	void	setAutoindex(std::string on_off_string);
 	void	setReturnInfo(int code, std::string uri);
 	void	setErrorPage(int error_code, std::string page_path);
@@ -42,8 +38,11 @@ public:
 	std::map<int, std::string>	getErrorPages();
 	std::set<Request::Method>	getMethodAllowed();
 
-
 private:
+	Location(const Location &other);
+
+	Location&	operator=(const Location &other);
+
 	std::string							path;
 	std::string							root;
 	std::vector<std::string>			index;
@@ -55,4 +54,3 @@ private:
 };
 
 #endif
-

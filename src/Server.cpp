@@ -78,7 +78,7 @@ std::string
 
 void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_code)
 {
-	Response &response = dial->getRes();
+	Response &response = dial->res;
 	response.makeStartLine("HTTP/1.1", error_code, this->statusMessage(error_code));
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
@@ -103,12 +103,12 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 		return ;
 	}
 
-	dial->setStatus(Dialogue::ReadyToResponse);
+	dial->status = Dialogue::ReadyToResponse;
 }
 
 void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t return_code)
 {
-	Response &response = dial->getRes();
+	Response &response = dial->res;
 	response.makeStartLine("HTTP/1.1", return_code, this->statusMessage(return_code));
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
@@ -163,11 +163,9 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 
 void Server::makeGETResponse(Dialogue *dial, Location &location, std::string path)
 {
-	Response &response = dial->getRes();
+	Response &response = dial->res;
 	response.addHeader("Date", this->dateHeader());
 	response.addHeader("Server", "hsonseyu Server");
-
-	Resource resource;
 
 	if (checkPath(path) == Directory)
 	{
@@ -211,7 +209,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string resource_path)
 {
 	//POST 는 대부분 cgi 처리를 원함. cgi 가 아닌 서버에서의 POST 의 경우 파일 생성
-	Response &response = dial->getRes();
+	Response &response = dial->res;
 
 	response.addHeader("Date", this->dateHeader());
 	response.addHeader("Server", "hsonseyu Server");
@@ -239,7 +237,7 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string resource_path)
 {
 	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
-	Response &response = dial->getRes();
+	Response &response = dial->res;
 
 	response.addHeader("Date", this->dateHeader());
 	response.addHeader("Server", "hsonseyu Server");

@@ -14,6 +14,21 @@ RequestReader& RequestReader::operator=(const RequestReader &other)
 	return (*this);
 }
 
+void	RequestReader::readRequest(void)
+{
+	// 버퍼사이즈를 인자로 받아오기
+	char	buf[BUFFER_SIZE];
+	int		len;
+
+	len = read(this->client_fd, buf, BUFFER_SIZE - 1);
+	if (len <= 0)
+	{
+		//error
+	}
+	buf[len] = 0;
+	reader.getRawRequest() += buf;
+}
+
 template <typename InputIt>
 static void
 	string_tolower(InputIt first, InputIt last)

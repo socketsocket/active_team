@@ -10,8 +10,9 @@ public:
 	ResponseWriter(Dialogue *dialogue_to_write);
 	~ResponseWriter();
 
-	void	holdResponse(Response *res);
-	bool	writeResponse();
+	void	pushResponse(Response &res);
+	bool	emptyBuffer();
+	void	writeResponse();
 
 private:
 	ResponseWriter();
@@ -19,9 +20,7 @@ private:
 
 	ResponseWriter&	operator=(const ResponseWriter &other);
 
-	std::vector<std::string>	buffer;
-
-	std::string	entire_response;
+	std::deque<std::string>	buffer;
 };
 
 #endif

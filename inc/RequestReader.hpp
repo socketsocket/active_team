@@ -23,7 +23,7 @@ public:
 
 	RequestReader&	operator=(const RequestReader &other);
 
-	// void		readRequest();
+	void		readRequest();
 	Dialogue*	parseRequest();
 
 	void	makeStartLine(Request &req);
@@ -39,7 +39,7 @@ private:
 	RequestReader(const RequestReader &other);
 
 	int			client_fd;
-	std::string	buffer; //raw_request ?
+	std::string	buffer;
 
 };
 

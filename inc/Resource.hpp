@@ -1,31 +1,32 @@
 #ifndef RESOURCE_HPP
 # define RESOURCE_HPP
 
+# include <vector>
+# include <queue>
 # include <string>
 
-# include "FDHandler.hpp"
+# include "FDManager.hpp"
 # include "Dialogue.hpp"
 
-class	Resource : FDHandler
+class	Resource : public FDManager
 {
 public:
-	Resource(); //얘가 필요함
-	Resource(std::string path, int oflag);
+	enum Type { READ, OVERWRITE, APPEND };
+
 	Resource(int fd, Dialogue *dialogue);
 	~Resource();
 
-	Resource&	operator=(const Resource &other);
-
-	void	readResource();
-	void	writeResource();
-
-	int		getFD();
+	virtual void	readEvent();
+	virtual void	writeEvent();
+	virtual void	timerEvent();
 
 private:
+	Resource();
 	Resource(const Resource &other);
 
-	int	openFile(std::string path, int oflag);
-	int	fd;
+	Resource&	operator=(const Resource &other);
+
+	Dialogue *dialogue;
 };
 
 #endif
