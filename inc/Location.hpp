@@ -31,7 +31,7 @@ public:
 	std::string					getPath();
 	std::string					getRoot();
 	std::vector<std::string>	&getIndex();
-	std::string					getCGIExecPath(std::string extension);
+	std::string					*getCGIExecPath(std::string extension);
 	std::map<std::string, std::string>	&getCGIInfo();
 	bool						isAutoIndex();
 	size_t						getReturnCode();

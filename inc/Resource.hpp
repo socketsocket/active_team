@@ -16,8 +16,8 @@ public:
 	Resource(int fd, Dialogue *dialogue);
 	~Resource();
 
-	virtual void	readEvent();
-	virtual void	writeEvent();
+	virtual void	readEvent(int read_size);
+	virtual void	writeEvent(int write_size);
 	virtual void	timerEvent();
 
 private:

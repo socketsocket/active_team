@@ -11,14 +11,14 @@
 
 struct	Dialogue;
 class	Location;
-class	ResponseWriter;
+// class	ResponseWriter;
 
-# include "RequestReader.hpp"
-# include "ResponseWriter.hpp"
 # include "FDManager.hpp"
 # include "Dialogue.hpp"
 # include "Location.hpp"
 # include "PortManager.hpp"
+# include "RequestReader.hpp"
+# include "ResponseWriter.hpp"
 
 class	Client : public FDManager
 {
@@ -26,8 +26,8 @@ public:
 	Client(PortManager *pm);
 	~Client();
 
-	virtual void	readEvent();
-	virtual void	writeEvent();
+	virtual void	readEvent(int read_size);
+	virtual void	writeEvent(int write_size);
 	virtual void	timerEvent();
 
 	enum	Status {
@@ -44,11 +44,8 @@ private:
 
 	Client&	operator=(const Client& other);
 
-	void 	prepareResponse(PortManager *pm, Dialogue *dial);
-	int		isCGIRequest(Request &req, Location &location);
-
-
-	int	openSocket(int server_socket);
+	void 				prepareResponse(Dialogue *dial);
+	std::string*		isCGIRequest(Request &req, Location &location);
 
 	PortManager			*pm;
 	RequestReader		reader;

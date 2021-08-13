@@ -58,6 +58,7 @@ SRCS	+=	\
 			Request.cpp \
 			RequestReader.cpp \
 			Resource.cpp \
+			Response.cpp \
 			ResponseWriter.cpp \
 			Server.cpp \
 

@@ -13,7 +13,7 @@ void
 {
 	this->http_version = http_version;
 	this->status_code = status_code;
-	this->message = message;
+	this->message = msg;
 
 	this->start_line += http_version;
 	this->start_line += " ";
@@ -28,6 +28,12 @@ void
 	this->header.insert(make_pair(key, val));
 }
 
+void
+	Response::addBody(std::string body)
+{
+	this->body += body;
+}
+
 std::string
 	Response::getStartLine()
 {
@@ -38,4 +44,10 @@ std::string&
 	Response::getBody()
 {
 	return (body);
+}
+
+std::map<std::string, std::string>&
+	Response::getHeaders()
+{
+	return (header);
 }

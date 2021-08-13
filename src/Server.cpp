@@ -1,21 +1,37 @@
 #include "Server.hpp"
+#include "EventHandlerInstance.hpp"
 
 Server::Server()
 {
-}
-
-Server::Server(const Server &s)
-{
-	*this = s;
 }
 
 Server::~Server()
 {
 }
 
-Server& Server::operator=(const Server &s)
+//config parsing
+void
+	Server::addLocation(std::string path, Location *loc)
 {
-	return (*this);
+	this->locations.insert(std::make_pair(path, loc));
+}
+
+void
+	Server::addErrorPage(int error_code, std::string page_path)
+{
+	this->error_page.insert(std::make_pair(error_code, page_path));
+}
+
+void
+	Server::setBodyLimit(int limit)
+{
+	this->body_limit = limit;
+}
+
+void
+	Server::setReturnInfo(int code, std::string uri)
+{
+	this->return_info = std::make_pair(code, uri);
 }
 
 void
@@ -29,6 +45,7 @@ void
 		throw BadDirective(on_off_string);
 }
 
+//make Response
 std::string 
 	Server::makeHTMLPage(std::string content)
 {
@@ -85,7 +102,7 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 	response.addHeader(std::string("Content-Type"), this->contentTypeHeader(".html"));
 
 	int fd = 0;
-	struct stat buf;
+	// struct stat buf;
 
 	if (location.getErrorPages().count(error_code))
 		fd = open(location.getErrorPages()[error_code].c_str(), O_RDONLY);
@@ -103,7 +120,7 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 		return ;
 	}
 
-	dial->status = Dialogue::ReadyToResponse;
+	dial->status = Dialogue::READY_TO_RESPONSE;
 }
 
 void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t return_code)
@@ -118,6 +135,7 @@ void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t retur
 
 std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Location &location)
 {
+	(void)location;
 	DIR *dir;
 	struct dirent *dir_read;
 
@@ -236,6 +254,7 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 
 void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string resource_path)
 {
+	(void)location;
 	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
 	Response &response = dial->res;
 
@@ -266,6 +285,8 @@ int		Server::checkPath(std::string path)
 			return File;
 		else if (S_ISDIR(buf.st_mode))
 			return Directory;
+		else
+			throw	BadRequest();
 	}
 }
 
@@ -292,7 +313,7 @@ int		Server::deleteDirectory(std::string path)
 			unlink(path.c_str());
 	}
 	rmdir(path.c_str());
-	return ;
+	return (0);
 }
 
 std::string	Server::statusMessage(size_t code) {
@@ -455,3 +476,32 @@ std::string
 	else
 		return ("keep-alive");
 }
+
+Location*
+	Server::getLocation(std::string uri)
+{
+	std::map<std::string, Location*>::iterator iter = locations.find(uri);
+	if (iter == locations.end())
+		return (0);
+	return (iter->second);
+}
+
+unsigned int
+	Server::getBodyLimit()
+{
+	return (body_limit);
+}
+
+size_t
+	Server::getReturnCode()
+{
+	return (return_info.first);
+}
+
+std::map<int, std::string>
+	Server::getErrorPages()
+{
+	return (error_page);
+}
+
+

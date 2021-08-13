@@ -11,14 +11,14 @@ class	CGI : public FDManager
 public:
 	struct Query { std::string name; std::string value; };
 
-	CGI(const std::string &script_path, Dialogue *dialogue, std::string &server_name, int server_port);
+	CGI(const std::string &script_path, Dialogue *dialogue, int server_port);
 	~CGI();
 
 	void	setPrintFD(int fd);
 	void	addQuery(std::string query_string);
 
-	virtual void	readEvent();
-	virtual void	writeEvent();
+	virtual void	readEvent(int read_size);
+	virtual void	writeEvent(int write_size);
 	virtual void	timerEvent();
 
 private:

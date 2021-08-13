@@ -6,8 +6,6 @@
 # include <queue>
 # include <deque>
 
-# include "Resource.hpp"
-
 class	Response
 {
 public:
@@ -24,7 +22,7 @@ public:
 
 	std::string		getStartLine();
 	std::string		&getBody();
-	void			setResoureFD(int fd);
+	// void			setResoureFD(int fd);
 	std::map<std::string, std::string> &getHeaders();
 
 private:

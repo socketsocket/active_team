@@ -1,5 +1,6 @@
 #include "RequestReader.hpp"
 #include "Dialogue.hpp"
+#include "Exception.hpp"
 
 RequestReader::RequestReader(int client_socket)
 	: client_fd(client_socket)
@@ -10,19 +11,15 @@ RequestReader::~RequestReader()
 {
 }
 
-void	RequestReader::readRequest(void)
+void	RequestReader::readRequest(int read_size)
 {
-// 	// 버퍼사이즈를 인자로 받아오기
-// 	char	buf[BUFFER_SIZE];
-// 	int		len;
+	std::string::size_type	buffer_size = buffer.size();
+	buffer.resize(buffer_size + read_size);
 
-// 	len = read(this->client_fd, buf, BUFFER_SIZE - 1);
-// 	if (len <= 0)
-// 	{
-// 		//error
-// 	}
-// 	buf[len] = 0;
-// 	reader.getRawRequest() += buf;
+	int	len = read(this->client_fd, &buffer[buffer_size], read_size);
+
+	if (len <= 0)
+		throw SystemCallError("read");
 }
 
 template <typename InputIt>
@@ -139,8 +136,6 @@ void	RequestReader::makeChunkedBody(Request &req)
 	}
 	if (len == 0)
 		req.setStatus(REQUEST_COMPLETE);
-
-
 }
 
 void	RequestReader::makeLengthBody(Request &req)
@@ -151,7 +146,6 @@ void	RequestReader::makeLengthBody(Request &req)
 	req.addBody(this->buffer.substr(0, len));
 	this->buffer.erase(0, len);
 	req.setStatus(REQUEST_COMPLETE);
-	
 }
 
 

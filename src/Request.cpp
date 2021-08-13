@@ -14,10 +14,11 @@ int		Request::getStatus()
 	return (status);
 }
 
-// Method	Request::getMethod()
-// {
-// 	return (method);
-// }
+Request::Method	
+	Request::getMethod()
+{
+	return (method);
+}
 
 std::string& Request::getUri()
 {

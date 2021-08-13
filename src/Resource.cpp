@@ -12,11 +12,12 @@ Resource::Resource(int fd, Dialogue *dialogue)
 	  dialogue(dialogue)
 {}
 
-void
-	Resource::readEvent()
-{
-	int	read_size = 1; // read event size parameter
+Resource::~Resource()
+{}
 
+void
+	Resource::readEvent(int read_size)
+{
 	std::string	&buffer = dialogue->res.getBody();
 
 	buffer.resize(buffer.size() + read_size);
@@ -29,17 +30,17 @@ void
 }
 
 void
-	Resource::writeEvent()
+	Resource::writeEvent(int write_size)
 {
 	std::string	&target = dialogue->req.getBody();
-	ssize_t		write_size = write(getFD(), &target[0], target.size());
+	ssize_t		write_bytes = write(getFD(), &target[0], write_size);
 
-	if (write_size == -1)
+	if (write_bytes == -1)
 		throw SystemCallError("write");
-	else if ((size_t)write_size == target.size())
+	else if ((size_t)write_bytes == target.size())
 		target.clear();
 	else
-		target.erase(0, write_size);
+		target.erase(0, write_bytes);
 }
 
 void

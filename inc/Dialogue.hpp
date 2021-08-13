@@ -12,13 +12,14 @@ struct	Dialogue
 public:
 	enum	Status
 	{
-		ReadingRequest,
-		Processing,
-		WritingResponse,
-		ReadyToResponse
+		READING_REQUEST,
+		PROCESSING,
+		WRITEING_RESPONSE,
+		READY_TO_RESPONSE,
+		READY_TO_WRITE,
 	};
 
-	Dialogue() : status(ReadingRequest) {}
+	Dialogue() : status(READING_REQUEST) {}
 	~Dialogue() {}
 
 	Client		*client;

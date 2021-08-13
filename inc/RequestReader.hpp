@@ -25,9 +25,7 @@ public:
 	RequestReader(int client_socket);
 	~RequestReader();
 
-	RequestReader&	operator=(const RequestReader &other);
-
-	void		readRequest();
+	void		readRequest(int read_size);
 	Dialogue*	parseRequest();
 
 	void	makeStartLine(Request &req);
@@ -41,6 +39,8 @@ public:
 private:
 	RequestReader();
 	RequestReader(const RequestReader &other);
+
+	RequestReader&	operator=(const RequestReader &other);
 
 	int			client_fd;
 	std::string	buffer;

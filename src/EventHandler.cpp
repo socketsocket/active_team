@@ -5,6 +5,7 @@
 #include <fstream>
 #include <queue>
 
+#include "EventHandlerInstance.hpp"
 #include "EventHandler.hpp"
 #include "Exception.hpp"
 
@@ -35,6 +36,8 @@ static Location
 {
 	Location	*location = new Location;
 
+	if (front_pop(config_queue) != "{")
+		throw NoExpectedDirective("{");
 	for (std::string word; (word = front_pop(config_queue)) != "}"; )
 	{
 		if (word == "root")
@@ -53,7 +56,7 @@ static Location
 		{
 			location->setErrorPage(std::atoi(front_pop(config_queue).c_str()), front_pop(config_queue));
 		}
-		else if (word == "allowed_method")
+		else if (word == "methods_allowed")
 		{
 			while (config_queue.front() != ";")
 			{
@@ -138,7 +141,7 @@ static Server
 		else
 			throw BadDirective(word);
 
-		if (front_pop(config_queue) != ";")
+		if (word != "location" && front_pop(config_queue) != ";")
 			throw NoExpectedDirective(";");
 	}
 
@@ -161,7 +164,8 @@ static void
 		foundPM = portManagers.find(*port_itr);
 		if (foundPM == portManagers.end())
 		{
-			foundPM = portManagers.insert(std::make_pair(*port_itr, new PortManager(*port_itr))).first;
+			PortManager	*pm = new PortManager(*port_itr);
+			foundPM = portManagers.insert(std::make_pair(*port_itr, pm)).first;
 		}
 		for (	std::vector<std::string>::iterator name_itr = names.begin();
 				name_itr != names.end();
@@ -176,6 +180,8 @@ static void
 
 EventHandler::EventHandler(std::string config_file_path)
 {
+	EventHandlerInstance::setInstance(this);
+
 	std::ifstream			config_file(config_file_path);
 	std::queue<std::string>	config_queue;
 
@@ -213,6 +219,25 @@ EventHandler::EventHandler(std::string config_file_path)
 	}
 }
 
+EventHandler::~EventHandler()
+{
+	for (	std::vector<FDManager *>::iterator itr = fds.begin();
+			itr != fds.end();
+			++itr)
+		delete *itr;
+	fds.clear();
+	for (	std::vector<Server *>::iterator itr = servers.begin();
+			itr != servers.end();
+			++itr)
+		delete *itr;
+	servers.clear();
+	for (	std::map<int, PortManager *>::iterator itr = portManagers.begin();
+			itr != portManagers.end();
+			++itr)
+		delete itr->second;
+	portManagers.clear();
+}
+
 void
 	EventHandler::start()
 {
@@ -240,9 +265,9 @@ void
 		{
 			curr_event = event_list + i;
 			if (curr_event->filter == EVFILT_READ)
-				fds[curr_event->ident]->readEvent();
+				fds[curr_event->ident]->readEvent(curr_event->data);
 			else if (curr_event->filter == EVFILT_WRITE)
-				fds[curr_event->ident]->writeEvent();
+				fds[curr_event->ident]->writeEvent(curr_event->data);
 			else if (curr_event->filter == EVFILT_TIMER)
 				fds[curr_event->ident]->timerEvent();
 		}
@@ -254,8 +279,8 @@ void
 {
 	if (fdm->getFD() < 0)
 		throw BadFileDescriptor();
-	if (fds.size() < (size_t)fdm->getFD())
-		fds.resize(fdm->getFD(), NULL);
+	if (fds.size() <= (size_t)fdm->getFD())
+		fds.resize(fdm->getFD() + 1, NULL);
 	fds[fdm->getFD()] = fdm;
 }
 

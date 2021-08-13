@@ -1,13 +1,25 @@
 #include <sys/socket.h>
-#include "Exception.hpp"
 
+#include "EventHandlerInstance.hpp"
+#include "Exception.hpp"
 #include "Client.hpp"
+#include "CGI.hpp"
+
+static int
+	openSocket(int server_socket)
+{
+	int	client_socket = accept(server_socket, NULL, NULL);
+
+	if (client_socket == -1)
+		throw SystemCallError("accept");
+	return (client_socket);
+}
 
 Client::Client(PortManager *pm)
 	: FDManager(openSocket(pm->getFD())),
 	  pm(pm),
 	  reader(this->getFD()),
-	  writer(NULL)
+	  writer(this->getFD())
 {}
 
 Client::~Client()
@@ -20,18 +32,18 @@ Client::~Client()
 }
 
 void
-	Client::readEvent()
+	Client::readEvent(int read_size)
 {
-	reader.readRequest();
+	reader.readRequest(read_size);
 	for (Dialogue *pingpong = reader.parseRequest(); pingpong != NULL; pingpong = reader.parseRequest())
 	{
 		dialogues.push(pingpong);
-		// Make Response
+		this->prepareResponse(pingpong);
 	}
 }
 
 void
-	Client::writeEvent()
+	Client::writeEvent(int write_size)
 {
 	if (dialogues.empty() == true)
 		throw UnexceptedEventOccured("Client write during empty response queue");
@@ -40,6 +52,10 @@ void
 		writer.pushResponse(dialogues.front()->res);
 		dialogues.pop();
 	}
+	if (writer.writeResponse(write_size))
+		delete this;
+	else if (dialogues.empty() == false && dialogues.front()->status == Dialogue::READY_TO_WRITE)
+		EventHandlerInstance::getInstance().enableWriteEvent(getFD());
 }
 
 void
@@ -49,7 +65,7 @@ void
 	// Client Destruct
 }
 
-int		Client::isCGIRequest(Request &request, Location &location)
+std::string*		Client::isCGIRequest(Request &request, Location &location)
 {
 	size_t dot;
 
@@ -60,18 +76,18 @@ int		Client::isCGIRequest(Request &request, Location &location)
 		extension++;
 	
 	std::string cgi_ext = request.getUri().substr(dot, extension - dot);
+
+	std::string* cgi_path = location.getCGIExecPath(cgi_ext);
+	if (cgi_path == 0)
+		throw BadRequest();
 	
-	std::map<std::string, std::string>::iterator cgi_iter = location.getCGIInfo().find(cgi_ext);
-	if (cgi_iter == location.getCGIInfo().end())
-		return (0);
-	
-	return (1);
+	return (cgi_path);
 }
-void 	Client::prepareResponse(PortManager *pm, Dialogue *dial)
+void 	Client::prepareResponse(Dialogue *dial)
 {
-	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("HOST");
+	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("host");
 	Server		*server = pm->getServer(iter->second);
-	Location	&location = server->getLocation(dial->req.getUri());
+	Location	&location = *(server->getLocation(dial->req.getUri()));
 
 
 	// Allowed Method (405 error)
@@ -88,14 +104,15 @@ void 	Client::prepareResponse(PortManager *pm, Dialogue *dial)
 		server->makeReturnResponse(dial, location, server->getReturnCode());
 
 	// response
-	if (this->isCGIRequest(dial->req, location))
+	std::string*	cgi_path;
+	if ((cgi_path = this->isCGIRequest(dial->req, location)) != 0)
 	{
 		//add headers
 		Response &res = dial->res;
 		res.addHeader("Date", server->dateHeader());
 		res.addHeader("Server", "hsonseyu Server");
 
-		//CGI(dial); 다시!
+		CGI cgi(*(cgi_path), dial, pm->getPort());
 	}
 	else
 	{
@@ -110,7 +127,7 @@ void 	Client::prepareResponse(PortManager *pm, Dialogue *dial)
 			server->makeDELETEResponse(dial, location, resource_path);
 		dial->req.setStatus(NEED_RESOURCE);
 
-		if (dial->status == Dialogue::ReadyToResponse)
+		if (dial->status == Dialogue::READY_TO_RESPONSE)
 			EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 
 	}

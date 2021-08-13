@@ -36,15 +36,14 @@ private:
 	Request& operator= (const Request &req);
 	
 	int				status;
+	int				body_type;	//처음에 NOBODY 로 초기화
 
 	Method			method;
 	std::string 	uri;
 	std::string 	http_version;
-	std::map<std::string, std::string> headers;  // 헤더 중복 허용 안함, 중복시 400 Bad Request, Connection: close
+	std::map<std::string, std::string>
+					headers;  // 헤더 중복 허용 안함, 중복시 400 Bad Request, Connection: close
 	std::string 	body;
-
-	std::string 	raw_req;
-	int				body_type;	//처음에 NOBODY 로 초기화
 };
 
 #endif

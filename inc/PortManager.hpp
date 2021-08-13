@@ -19,17 +19,20 @@ public:
 
 	void	addServer(std::string server_name, Server *server);
 
-	virtual void	readEvent();
-	virtual void	writeEvent();
+	virtual void	readEvent(int read_size);
+	virtual void	writeEvent(int write_size);
 	virtual void	timerEvent();
 
 	Server*	getServer(std::string hostname);
+	int		getPort();
 
 private:
 	PortManager();
 	PortManager(const PortManager &other);
 
 	PortManager&	operator=(const PortManager &other);
+
+	int	port;
 
 	std::vector<std::pair<std::string, Server *> >	servers; //pair(hostname, server) 로 저장하고 find_if로 찾기 - default
 };

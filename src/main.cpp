@@ -1,6 +1,8 @@
 #include "EventHandlerInstance.hpp"
 #include "EventHandler.hpp"
 
+EventHandler	*EventHandlerInstance::instance = NULL;
+
 int	main(int argc, char *argv[])
 {
 	std::string	config_path;
@@ -18,7 +20,6 @@ int	main(int argc, char *argv[])
 	try
 	{
 		EventHandler	*evh = new EventHandler(config_path);
-		EventHandlerInstance::setInstance(evh);
 		evh->start();
 		delete evh;
 	}
