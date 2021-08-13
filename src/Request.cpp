@@ -9,12 +9,12 @@ Request::~Request()
 {
 }
 
-int		Request::getStatus()
-{
-	return (status);
-}
+// int		Request::getStatus()
+// {
+// 	return (status);
+// }
 
-Request::Method	
+Request::Method
 	Request::getMethod()
 {
 	return (method);
@@ -41,15 +41,15 @@ std::string&	Request::getBody()
 	return (body);
 }
 
-int	Request::getBodyType()
-{
-	return (body_type);
-}
+// int	Request::getBodyType()
+// {
+// 	return (body_type);
+// }
 
-void	Request::setStatus(int status)
-{
-	this->status = status;
-}
+// void	Request::setStatus(int status)
+// {
+// 	this->status = status;
+// }
 
 void
 	Request::setMethod(Method method)
@@ -79,7 +79,7 @@ void Request::addBody(std::string body)
 	this->body += body;
 }
 
-void Request::setBodyType(int type)
-{
-	this->body_type = type;
-}
+// void Request::setBodyType(int type)
+// {
+// 	this->body_type = type;
+// }

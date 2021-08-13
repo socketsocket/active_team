@@ -17,22 +17,17 @@ public:
 		PARSING_BODY,
 		REQUEST_COMPLETE,
 	};
-	enum	BodyStatus {
-		NOBODY,
-		CHUNKED,
-		CONTENT_LENGTH,
-	};
 	RequestReader(int client_socket);
 	~RequestReader();
 
 	void		readRequest(int read_size);
 	Dialogue*	parseRequest();
 
-	void	makeStartLine(Request &req);
-	void 	makeReqHeader(Request &req);
-	void	checkBody(Request &req);
-	void	makeChunkedBody(Request &req);
-	void	makeLengthBody(Request &req);
+	void	makeStartLine();
+	void 	makeReqHeader();
+	void	checkBody();
+	void	makeChunkedBody();
+	void	makeLengthBody();
 
 	std::string	getRawRequest();
 
@@ -43,8 +38,11 @@ private:
 	RequestReader&	operator=(const RequestReader &other);
 
 	int			client_fd;
+	Dialogue	*dial;
+	bool		chunked;
+	long		content_length;
 	std::string	buffer;
-
+	Status		stat;
 };
 
 #endif

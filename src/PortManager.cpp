@@ -72,7 +72,7 @@ Server*
 {
 	typedef	std::pair<std::string, Server *>	DNS;
 
-	assert(servers.size() == 0);
+	// assert(servers.size() == 0);
 
 	for (	std::vector<DNS>::iterator itr = servers.begin();
 			itr != servers.end();

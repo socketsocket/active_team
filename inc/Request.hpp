@@ -14,29 +14,29 @@ public:
 	Request();
 	~Request();
 
-	int				getStatus();
+	// int				getStatus();
 	Method			getMethod();
 	std::string 	&getUri();
 	std::string 	getHttpVersion();
 	std::map<std::string, std::string>	&getHeaders();
 	std::string 	&getBody();
-	int				getBodyType();
+	// int				getBodyType();
 
-	void			setStatus(int status);
+	// void			setStatus(int status);
 	void			setMethod(Method method);
 	void			setUri(std::string uri);
 	void			setHttpVersion(std::string version);
 	void			setHeaders(std::string key, std::string val);
 	void			addBody(std::string body);
-	void			setBodyType(int type);
+	// void			setBodyType(int type);
 
 private:
 	Request(const Request& req);
 
 	Request& operator= (const Request &req);
-	
-	int				status;
-	int				body_type;	//처음에 NOBODY 로 초기화
+
+	// int				status;
+	// int				body_type;	//처음에 NOBODY 로 초기화
 
 	Method			method;
 	std::string 	uri;

@@ -46,7 +46,7 @@ void
 }
 
 //make Response
-std::string 
+std::string
 	Server::makeHTMLPage(std::string content)
 {
 	std::string html;
@@ -65,7 +65,7 @@ std::string
 	html += "</body>\r\n";
 
 	html += "</html>";
-	
+
 	return (html);
 }
 
@@ -89,7 +89,7 @@ std::string
 	html += "</body>\r\n";
 
 	html += "</html>";
-	
+
 	return (html);
 }
 
@@ -151,7 +151,7 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 
 	if((dir = opendir(path.c_str())) == 0)
 		return (this->generateErrorPage(500));
-	
+
 	while ((dir_read = readdir(dir)) != 0)
 	{
 		std::string name = std::string(dir_read->d_name);
@@ -298,7 +298,7 @@ int		Server::deleteDirectory(std::string path)
 
 	if((dir = opendir(path.c_str())) == 0)
 		return (1);
-	
+
 	while ((dir_read = readdir(dir)) != 0)
 	{
 		std::string name = std::string(dir_read->d_name);
@@ -317,134 +317,144 @@ int		Server::deleteDirectory(std::string path)
 }
 
 std::string	Server::statusMessage(size_t code) {
-	std::map<size_t, std::string> status;
+	static std::map<size_t, std::string>	status;
 
-	status[100] = "Continue";
-	status[101] = "Switching Protocols";
-	status[102] = "Processing";
-	status[200] = "OK";
-	status[201] = "Created";
-	status[202] = "Accepted";
-	status[203] = "Non-authoritative Information";
-	status[204] = "No Content";
-	status[205] = "Reset Content";
-	status[206] = "Partial Content";
-	status[207] = "Multi-Status";
-	status[208] = "Already Reported";
-	status[226] = "IM Used";
-	status[300] = "Multiple Choices";
-	status[301] = "Moved Permanently";
-	status[302] = "Found";
-	status[303] = "See Other";
-	status[304] = "Not Modified";
-	status[305] = "Use Proxy";
-	status[307] = "Temporary Redirect";
-	status[308] = "Permanent Redirect";
-	status[400] = "Bad Request";
-	status[401] = "Unauthorized";
-	status[402] = "Payment Required";
-	status[403] = "Forbidden";
-	status[404] = "Not found";
-	status[405] = "Method Not Allowed";
-	status[406] = "Not Acceptable";
-	status[407] = "Proxy Authentication Required";
-	status[408] = "Required Timeout";
-	status[409] = "Conflict";
-	status[410] = "Gone";
-	status[411] = "Length Required";
-	status[412] = "Precondition Failed";
-	status[413] = "Request Entity Too Large";
-	status[414] = "Request URI Too Long";
-	status[415] = "Unsupported Media Type";
-	status[416] = "Requested Range Not Satisfiable";
-	status[417] = "Expectation Failed";
-	status[418] = "IM_A_TEAPOT";
-	status[500] = "Internal Server Error";
-	status[501] = "Not Implemented";
-	status[502] = "Bad Gateway";
-	status[503] = "Service Unavailable";
-	status[504] = "Gateway Timeout";
-	status[505] = "HTTP Version Not Supported";
-	status[506] = "Variant Also Negotiates";
-	status[507] = "Insufficient Storage";
-	status[508] = "Loop Detected";
-	status[510] = "Not Extened";
-	status[511] = "Network Authentication Required";
-	status[599] = "Network Connect Timeout Error";
+	if (status.size() == 0)
+	{
+		status[100] = "Continue";
+		status[101] = "Switching Protocols";
+		status[102] = "Processing";
+		status[200] = "OK";
+		status[201] = "Created";
+		status[202] = "Accepted";
+		status[203] = "Non-authoritative Information";
+		status[204] = "No Content";
+		status[205] = "Reset Content";
+		status[206] = "Partial Content";
+		status[207] = "Multi-Status";
+		status[208] = "Already Reported";
+		status[226] = "IM Used";
+		status[300] = "Multiple Choices";
+		status[301] = "Moved Permanently";
+		status[302] = "Found";
+		status[303] = "See Other";
+		status[304] = "Not Modified";
+		status[305] = "Use Proxy";
+		status[307] = "Temporary Redirect";
+		status[308] = "Permanent Redirect";
+		status[400] = "Bad Request";
+		status[401] = "Unauthorized";
+		status[402] = "Payment Required";
+		status[403] = "Forbidden";
+		status[404] = "Not found";
+		status[405] = "Method Not Allowed";
+		status[406] = "Not Acceptable";
+		status[407] = "Proxy Authentication Required";
+		status[408] = "Required Timeout";
+		status[409] = "Conflict";
+		status[410] = "Gone";
+		status[411] = "Length Required";
+		status[412] = "Precondition Failed";
+		status[413] = "Request Entity Too Large";
+		status[414] = "Request URI Too Long";
+		status[415] = "Unsupported Media Type";
+		status[416] = "Requested Range Not Satisfiable";
+		status[417] = "Expectation Failed";
+		status[418] = "IM_A_TEAPOT";
+		status[500] = "Internal Server Error";
+		status[501] = "Not Implemented";
+		status[502] = "Bad Gateway";
+		status[503] = "Service Unavailable";
+		status[504] = "Gateway Timeout";
+		status[505] = "HTTP Version Not Supported";
+		status[506] = "Variant Also Negotiates";
+		status[507] = "Insufficient Storage";
+		status[508] = "Loop Detected";
+		status[510] = "Not Extened";
+		status[511] = "Network Authentication Required";
+		status[599] = "Network Connect Timeout Error";
+	}
 	if (status.count(code) == 0)
-		return 0;
+	{
+		assert(true);
+		return "";
+	}
 	else
 		return status[code];
 }
 
-std::string	Server::contentTypeHeader(std::string extension) {
-	std::map<std::string, std::string> mimeType;
 
-	mimeType[".aac"] = "audio/aac";
-	mimeType[".abw"] = "application/x-abiword";
-	mimeType[".arc"] = "application/octet-stream";
-	mimeType[".avi"] = "video/x-msvideo";
-	mimeType[".azw"] = "application/vnd.amazon.ebook";
-	mimeType[".bin"] = "application/octet-stream";
-	mimeType[".bz"] = "application/x-bzip";
-	mimeType[".bz2"] = "application/x-bzip2";
-	mimeType[".csh"] = "application/x-csh";
-	mimeType[".css"] = "text/css";
-	mimeType[".csv"] = "text/csv";
-	mimeType[".doc"] = "application/msword";
-	mimeType[".epub"] = "application/epub+zip";
-	mimeType[".Gif"] = "image/gif";
-	mimeType[".htm"] = "text/html";
-	mimeType[".html"] = "text/html";
-	mimeType[".ico"] = "image/x-icon";
-	mimeType[".ics"] = "text/calendar";
-	mimeType[".jar"] = "Temporary Redirect";
-	mimeType[".jpeg"] = "image/jpeg";
-	mimeType[".jpg"] = "image/jpeg";
-	mimeType[".js"] = "application/js";
-	mimeType[".json"] = "application/json";
-	mimeType[".mid"] = "audio/midi";
-	mimeType[".midi"] = "audio/midi";
-	mimeType[".mpeg"] = "video/mpeg";
-	mimeType[".mpkg"] = "application/vnd.apple.installer+xml";
-	mimeType[".odp"] = "application/vnd.oasis.opendocument.presentation";
-	mimeType[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
-	mimeType[".odt"] = "application/vnd.oasis.opendocument.text";
-	mimeType[".oga"] = "audio/ogg";
-	mimeType[".ogv"] = "video/ogg";
-	mimeType[".ogx"] = "application/ogg";
-	mimeType[".pdf"] = "application/pdf";
-	mimeType[".ppt"] = "application/vnd.ms-powerpoint";
-	mimeType[".rar"] = "application/x-rar-compressed";
-	mimeType[".rtf"] = "application/rtf";
-	mimeType[".sh"] = "application/x-sh";
-	mimeType[".svg"] = "image/svg+xml";
-	mimeType[".swf"] = "application/x-shockwave-flash";
-	mimeType[".tar"] = "application/x-tar";
-	mimeType[".tif"] = "image/tiff";
-	mimeType[".tiff"] = "image/tiff";
-	mimeType[".ttf"] = "application/x-font-ttf";
-	mimeType[".vsd"] = " application/vnd.visio";
-	mimeType[".wav"] = "audio/x-wav";
-	mimeType[".weba"] = "audio/webm";
-	mimeType[".webm"] = "video/webm";
-	mimeType[".webp"] = "image/webp";
-	mimeType[".woff"] = "application/x-font-woff";
-	mimeType[".xhtml"] = "application/xhtml+xml";
-	mimeType[".xls"] = "application/vnd.ms-excel";
-	mimeType[".xml"] = "application/xml";
-	mimeType[".xul"] = "application/vnd.mozilla.xul+xml";
-	mimeType[".zip"] = "application/zip";
-	mimeType[".3gp"] = "video/3gpp audio/3gpp";
-	mimeType[".3g2"] = "video/3gpp2 audio/3gpp2";
-	mimeType[".7z"] = "application/x-7z-compressed";
+std::string	Server::contentTypeHeader(std::string extension) {
+	static std::map<std::string, std::string>	mimeType;
+
+	if (mimeType.size() == 0)
+	{
+		mimeType[".aac"] = "audio/aac";
+		mimeType[".abw"] = "application/x-abiword";
+		mimeType[".arc"] = "application/octet-stream";
+		mimeType[".avi"] = "video/x-msvideo";
+		mimeType[".azw"] = "application/vnd.amazon.ebook";
+		mimeType[".bin"] = "application/octet-stream";
+		mimeType[".bz"] = "application/x-bzip";
+		mimeType[".bz2"] = "application/x-bzip2";
+		mimeType[".csh"] = "application/x-csh";
+		mimeType[".css"] = "text/css";
+		mimeType[".csv"] = "text/csv";
+		mimeType[".doc"] = "application/msword";
+		mimeType[".epub"] = "application/epub+zip";
+		mimeType[".Gif"] = "image/gif";
+		mimeType[".htm"] = "text/html";
+		mimeType[".html"] = "text/html";
+		mimeType[".ico"] = "image/x-icon";
+		mimeType[".ics"] = "text/calendar";
+		mimeType[".jar"] = "Temporary Redirect";
+		mimeType[".jpeg"] = "image/jpeg";
+		mimeType[".jpg"] = "image/jpeg";
+		mimeType[".js"] = "application/js";
+		mimeType[".json"] = "application/json";
+		mimeType[".mid"] = "audio/midi";
+		mimeType[".midi"] = "audio/midi";
+		mimeType[".mpeg"] = "video/mpeg";
+		mimeType[".mpkg"] = "application/vnd.apple.installer+xml";
+		mimeType[".odp"] = "application/vnd.oasis.opendocument.presentation";
+		mimeType[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+		mimeType[".odt"] = "application/vnd.oasis.opendocument.text";
+		mimeType[".oga"] = "audio/ogg";
+		mimeType[".ogv"] = "video/ogg";
+		mimeType[".ogx"] = "application/ogg";
+		mimeType[".pdf"] = "application/pdf";
+		mimeType[".ppt"] = "application/vnd.ms-powerpoint";
+		mimeType[".rar"] = "application/x-rar-compressed";
+		mimeType[".rtf"] = "application/rtf";
+		mimeType[".sh"] = "application/x-sh";
+		mimeType[".svg"] = "image/svg+xml";
+		mimeType[".swf"] = "application/x-shockwave-flash";
+		mimeType[".tar"] = "application/x-tar";
+		mimeType[".tif"] = "image/tiff";
+		mimeType[".tiff"] = "image/tiff";
+		mimeType[".ttf"] = "application/x-font-ttf";
+		mimeType[".vsd"] = " application/vnd.visio";
+		mimeType[".wav"] = "audio/x-wav";
+		mimeType[".weba"] = "audio/webm";
+		mimeType[".webm"] = "video/webm";
+		mimeType[".webp"] = "image/webp";
+		mimeType[".woff"] = "application/x-font-woff";
+		mimeType[".xhtml"] = "application/xhtml+xml";
+		mimeType[".xls"] = "application/vnd.ms-excel";
+		mimeType[".xml"] = "application/xml";
+		mimeType[".xul"] = "application/vnd.mozilla.xul+xml";
+		mimeType[".zip"] = "application/zip";
+		mimeType[".3gp"] = "video/3gpp audio/3gpp";
+		mimeType[".3g2"] = "video/3gpp2 audio/3gpp2";
+		mimeType[".7z"] = "application/x-7z-compressed";
+	}
 	if (mimeType.count(extension) == 0)
 		return "text/plain";
 	else
 		return mimeType[extension];
 }
 
-std::string	
+std::string
 	Server::dateHeader(void)
 {
 	time_t curr_time = time(NULL);
@@ -456,7 +466,7 @@ std::string
 }
 
 std::string
-	Server::lastModifiedHeader(void) 
+	Server::lastModifiedHeader(void)
 {
 	struct stat	sb;
 	struct tm*	timeinfo = localtime(&sb.st_mtime);
