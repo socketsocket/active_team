@@ -152,7 +152,7 @@ static Server
 
 static void
 	connectPortWithServer(
-		std::map<int, PortManager *> &portManagers,
+		std::map<int, PortManager *> &port_managers,
 		std::vector<int> &ports,
 		std::vector<std::string> &names,
 		Server *server )
@@ -161,11 +161,11 @@ static void
 	{
 		std::map<int, PortManager *>::iterator	foundPM;
 
-		foundPM = portManagers.find(*port_itr);
-		if (foundPM == portManagers.end())
+		foundPM = port_managers.find(*port_itr);
+		if (foundPM == port_managers.end())
 		{
 			PortManager	*pm = new PortManager(*port_itr);
-			foundPM = portManagers.insert(std::make_pair(*port_itr, pm)).first;
+			foundPM = port_managers.insert(std::make_pair(*port_itr, pm)).first;
 		}
 		for (	std::vector<std::string>::iterator name_itr = names.begin();
 				name_itr != names.end();
@@ -211,7 +211,7 @@ EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_sec
 				Server	*server = parseServer(config_queue, ports, names);
 
 				servers.push_back(server);
-				connectPortWithServer(portManagers, ports, names, server);
+				connectPortWithServer(port_managers, ports, names, server);
 			}
 		}
 		else
@@ -231,11 +231,11 @@ EventHandler::~EventHandler()
 			++itr)
 		delete *itr;
 	servers.clear();
-	for (	std::map<int, PortManager *>::iterator itr = portManagers.begin();
-			itr != portManagers.end();
+	for (	std::map<int, PortManager *>::iterator itr = port_managers.begin();
+			itr != port_managers.end();
 			++itr)
 		delete itr->second;
-	portManagers.clear();
+	port_managers.clear();
 }
 
 void
@@ -244,8 +244,8 @@ void
 	if ((kq = kqueue()) == -1)
 		throw SystemCallError("kqueue");
 
-	for (	std::map<int, PortManager *>::iterator itr = portManagers.begin();
-			itr != portManagers.end();
+	for (	std::map<int, PortManager *>::iterator itr = port_managers.begin();
+			itr != port_managers.end();
 			++itr)
 	{
 		enableReadEvent(itr->second->getFD());

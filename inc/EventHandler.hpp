@@ -39,7 +39,7 @@ private:
 
 	std::vector<FDManager *>		fds;
 	std::vector<Server *>			servers;
-	std::map<int, PortManager *>	portManagers;
+	std::map<int, PortManager *>	port_managers;
 	int								kq;
 
 	const int	socket_timeout_in_second;
