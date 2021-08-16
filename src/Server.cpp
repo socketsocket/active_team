@@ -77,7 +77,7 @@ std::string
 	html += "<html>\r\n";
 
 	html += "<head>\r\n";
-	html += "<title>" + std::to_string(error_code) + " " + this->statusMessage(error_code) + "</head>\r\n";
+	html += "<title>" + std::to_string(error_code) + " " + this->statusMessage(error_code) + "</title>\r\n";
 	html += "</head>\r\n";
 
 	html += "<body>\r\n";
@@ -110,7 +110,11 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 	else if (this->getErrorPages().count(error_code))
 		fd = open(this->getErrorPages()[error_code].c_str(), O_RDONLY);
 	else
+	{
 		response.addBody(this->generateErrorPage(error_code));
+		dial->status = Dialogue::READY_TO_RESPONSE;
+		return ;
+	}
 
 	if (fd == -1)
 		response.addBody(this->generateErrorPage(error_code));
@@ -136,6 +140,7 @@ void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t retur
 	else
 		response.addHeader(std::string("Connection"), "close");
 
+	dial->status = Dialogue::READY_TO_RESPONSE;
 }
 
 
@@ -163,7 +168,7 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 		std::string name = std::string(dir_read->d_name);
 		if (dir_read->d_type == DT_DIR)
 			name += '/';
-		body += "<a href=\"" + name + "\">" + name + "</a><br>\n";
+		body += "<a href=\"" + name + "\">" + name + "</a><br>";
 
 		//dd-mm-yyyy hh:mm
 		time_t	curr_time = time(NULL);
@@ -171,7 +176,7 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 		char	buffer[64];
 		timeinfo = localtime(&curr_time);
 		strftime(buffer, 64, "%d-%b-%Y %H:%M", timeinfo);
-		body += "                                       " + std::string(buffer);
+		body += "                                       " + std::string(buffer) + "\n";
 
 	}
 	closedir(dir);
@@ -262,8 +267,8 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 
 	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
 
-	Resource resource(fd, dial);
-	EventHandlerInstance::getInstance().enableReadEvent(resource.getFD());
+	Resource *resource = new Resource(fd, dial);
+	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
 }
 
 void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string resource_path)
@@ -289,6 +294,8 @@ void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string 
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 	response.addBody(this->makeHTMLPage("File deleted."));
+
+	dial->status = Dialogue::READY_TO_RESPONSE;
 }
 
 int		Server::checkPath(std::string path)

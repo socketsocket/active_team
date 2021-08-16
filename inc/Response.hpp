@@ -19,11 +19,13 @@ public:
 	void			makeStartLine(std::string http_version, unsigned int status_code, std::string msg);
 	void			addHeader(std::string, std::string);
 	void			addBody(std::string);
+	void			setStatusCode(unsigned int code);
 
 	std::string		getStartLine();
 	std::string		&getBody();
 	// void			setResoureFD(int fd);
 	std::map<std::string, std::string> &getHeaders();
+	unsigned int	getStatusCode();
 
 private:
 	Response(const Response &other);

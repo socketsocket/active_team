@@ -264,6 +264,12 @@ void
 		for (int i = 0; i < num_of_event; ++i)
 		{
 			curr_event = event_list + i;
+			if ((curr_event->flags & EV_ERROR) || (curr_event->flags & EV_EOF))
+			{
+				delete fds[curr_event->ident];
+				continue ;
+			}
+
 			if (curr_event->filter == EVFILT_READ)
 				fds[curr_event->ident]->readEvent(curr_event->data);
 			else if (curr_event->filter == EVFILT_WRITE)

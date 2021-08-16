@@ -92,19 +92,24 @@ void
 	Server		*server = pm->getServer(iter->second);
 	Location	&location = *(server->getLocation(dial->req.getUri()));
 
+	//maybe 400
+	if (dial->res.getStatusCode() != 0)
+		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
 
 	// Allowed Method (405 error)
-	if (location.getMethodAllowed().empty() ||
-			std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), dial->req.getMethod()) == location.getMethodAllowed().end())
+	else if (std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), dial->req.getMethod()) == location.getMethodAllowed().end())
 		server->makeErrorResponse(dial, location, 405);
 
 	// Client Body Limit
-	if (dial->req.getBody().length() > server->getBodyLimit())
+	else if (dial->req.getBody().length() > server->getBodyLimit())
 		server->makeErrorResponse(dial, location, 413);
 
 	// Server Block return
-	if (server->getReturnCode() != 0 || location.getReturnCode() != 0)
+	else if (server->getReturnCode() != 0 || location.getReturnCode() != 0)
 		server->makeReturnResponse(dial, location, server->getReturnCode());
+
+	if (dial->status == Dialogue::READY_TO_RESPONSE)
+		return EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 
 	// response
 	try

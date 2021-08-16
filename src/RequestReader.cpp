@@ -1,5 +1,6 @@
 #include <cstdlib>
 
+#include "EventHandlerInstance.hpp"
 #include "RequestReader.hpp"
 #include "Dialogue.hpp"
 #include "Exception.hpp"
@@ -76,6 +77,8 @@ void	RequestReader::makeStartLine()
 	req.setUri(tmp);
 
 	tmp = start_line.substr(start_line.rfind(' ') + 1);
+	if (tmp != "http/1.0" && tmp != "http/1.1")
+		throw BadRequest();
 	req.setHttpVersion(tmp);
 
 	if (this->buffer.length() > start_line.size())
@@ -174,7 +177,7 @@ void	RequestReader::makeLengthBody()
 	Request	&req = dial->req;
 	size_t	len;
 
-	len = atoi(req.getHeaders()["Content-Length"].c_str());
+	len = atoi(req.getHeaders()["content-length"].c_str());
 	req.addBody(this->buffer.substr(0, len));
 	this->buffer.erase(0, len);
 	stat = REQUEST_COMPLETE;
@@ -182,25 +185,38 @@ void	RequestReader::makeLengthBody()
 
 Dialogue*	RequestReader::parseRequest(void)
 {
-	if (stat == PARSING_START)
-		this->makeStartLine();
-	if (stat == PARSING_HEADER)
-		this->makeReqHeader();
-	if (stat == PARSING_BODY)
+	if (dial == NULL)
+		return (NULL);
+	try
 	{
-		if (chunked)
-			this->makeChunkedBody();
-		else if (content_length > 0)
-			this->makeLengthBody();
-	}
-	if (stat == REQUEST_COMPLETE)
-	{
-		Dialogue	*rtn = dial;
+		if (stat == PARSING_START)
+			this->makeStartLine();
+		if (stat == PARSING_HEADER)
+			this->makeReqHeader();
+		if (stat == PARSING_BODY)
+		{
+			if (chunked)
+				this->makeChunkedBody();
+			else if (content_length > 0)
+				this->makeLengthBody();
+		}
+		if (stat == REQUEST_COMPLETE)
+		{
+			Dialogue	*rtn = dial;
 
-		dial = new Dialogue(rtn->client_fd);
-		stat = PARSING_START;
+			dial = new Dialogue(rtn->client_fd);
+			stat = PARSING_START;
+			return (rtn);
+		}
+		else
+			return (NULL);
+	}
+	catch (BadRequest &e)
+	{
+		dial->res.setStatusCode(400);
+
+		Dialogue	*rtn = dial;
+		dial = NULL;
 		return (rtn);
 	}
-	else
-		return (NULL);
 }

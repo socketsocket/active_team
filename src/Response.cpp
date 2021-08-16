@@ -1,12 +1,11 @@
 #include "Response.hpp"
 
 Response::Response()
-{
-}
+	: status_code(0)
+{}
 
 Response::~Response()
-{
-}
+{}
 
 void
 	Response::makeStartLine(std::string http_version, unsigned int status_code, std::string msg)
@@ -50,4 +49,16 @@ std::map<std::string, std::string>&
 	Response::getHeaders()
 {
 	return (header);
+}
+
+unsigned int
+	Response::getStatusCode()
+{
+	return (status_code);
+}
+
+void
+	Response::setStatusCode(unsigned int code)
+{
+	this->status_code = code;
 }
