@@ -8,6 +8,12 @@ Location::Location()
 Location::~Location()	{}
 
 void
+	Location::setPath(std::string path)
+{
+	this->path = path;
+}
+
+void
 	Location::setRoot(std::string root_path)
 {
 	if (root.empty() == false)

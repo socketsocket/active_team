@@ -125,9 +125,7 @@ static Server
 			if (config_queue.front() != "{")
 				throw NoExpectedDirective("{");
 			else
-			{
 				server->addLocation(location_path, parseLocation(config_queue));
-			}
 		}
 		else if (word == "return")
 		{
@@ -252,7 +250,6 @@ void
 	}
 
 	struct kevent	event_list[MAX_EVENT_SIZE];
-	struct kevent	*curr_event;
 
 	while (true)
 	{
@@ -261,9 +258,10 @@ void
 		if ((num_of_event = kevent(kq, NULL, 0, event_list, MAX_EVENT_SIZE, NULL)) == -1)
 			throw SystemCallError("kevent");
 
-		for (int i = 0; i < num_of_event; ++i)
+		for (struct kevent *curr_event = event_list; curr_event != event_list + num_of_event; ++curr_event)
 		{
-			curr_event = event_list + i;
+			if (fds[curr_event->ident] == NULL)
+				continue ;
 			if ((curr_event->flags & EV_ERROR) || (curr_event->flags & EV_EOF))
 			{
 				delete fds[curr_event->ident];

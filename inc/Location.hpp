@@ -16,6 +16,7 @@ public:
 	Location();
 	~Location();
 
+	void	setPath(std::string path);
 	void	setRoot(std::string root_path);
 	void	setAutoindex(std::string on_off_string);
 	void	setReturnInfo(int code, std::string uri);
