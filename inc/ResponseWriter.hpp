@@ -17,7 +17,7 @@ public:
 
 	void	pushResponse(Response &res);
 	bool	emptyBuffer();
-	bool	writeResponse(int write_size);
+	bool	writeResponse(long write_size);
 
 private:
 	ResponseWriter();

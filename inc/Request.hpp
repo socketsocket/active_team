@@ -30,6 +30,8 @@ public:
 	void			addBody(std::string body);
 	// void			setBodyType(int type);
 
+	bool			keepConnection();	// true -> keep-alive, false -> close
+
 private:
 	Request(const Request& req);
 

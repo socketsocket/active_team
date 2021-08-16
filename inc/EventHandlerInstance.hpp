@@ -13,7 +13,6 @@ public:
 
 	static void			setInstance(EventHandler *evh)	{ instance = evh; }
 	static EventHandler	&getInstance()	{ return (*instance); }
-	EventHandler		*operator->()	{ return &getInstance(); }
 
 private:
 	EventHandlerInstance(const EventHandlerInstance &other);

@@ -2,8 +2,7 @@
 #include "Exception.hpp"
 
 Location::Location()
-	: return_info(std::make_pair(200, "")),
-	  auto_index(false)
+	: auto_index(false)
 {}
 
 Location::~Location()	{}

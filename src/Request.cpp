@@ -79,6 +79,16 @@ void Request::addBody(std::string body)
 	this->body += body;
 }
 
+bool Request::keepConnection()
+{
+	std::map<std::string, std::string>::iterator	found;
+
+	found = headers.find("connection");
+	if (found != headers.end() && found->second == "close")
+		return (false);
+	return (true);
+}
+
 // void Request::setBodyType(int type)
 // {
 // 	this->body_type = type;

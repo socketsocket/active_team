@@ -86,7 +86,7 @@ CGI::CGI(const std::string &script_path, Dialogue *dialogue, int server_port)
 		setenv("PATH_INFO", "", 1);
 		setenv("PATH_TRANSLATED", "", 1);
 		setenv("QUERY_STRING", uri.substr(uri.find('?')).c_str(), 1);
-		setenv("REMOTE_ADDR", getAddr(dialogue->client->getFD()).c_str(), 1);
+		setenv("REMOTE_ADDR", getAddr(dialogue->client_fd).c_str(), 1);
 		setenv("REMOTE_HOST", "", 1);
 		setenv("REMOTE_IDENT", "", 1);
 		setenv("REMOTE_USER", "", 1);
@@ -99,7 +99,7 @@ CGI::CGI(const std::string &script_path, Dialogue *dialogue, int server_port)
 
 		dup2(script_stdin, 0);
 		// close(script_stdin);
-		dup2(dialogue->client->getFD(), 1);
+		dup2(dialogue->client_fd, 1);
 		// close(dialogue->client->getFD());
 
 		char* const	argv[3] = { const_cast<char *>(script_path.c_str()), getenv("SCRIPT_NAME"), NULL };
@@ -120,14 +120,14 @@ CGI::~CGI()
 }
 
 void
-	CGI::readEvent(int read_size)
+	CGI::readEvent(long read_size)
 {
 	(void)read_size;
 	throw UnexceptedEventOccured("CGI Read event");
 }
 
 void
-	CGI::writeEvent(int write_size)
+	CGI::writeEvent(long write_size)
 {
 	std::string	&write_buffer = dialogue->req.getBody();
 	ssize_t		write_byte;

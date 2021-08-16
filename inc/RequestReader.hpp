@@ -20,12 +20,11 @@ public:
 	RequestReader(int client_socket);
 	~RequestReader();
 
-	void		readRequest(int read_size);
+	void		readRequest(long read_size);
 	Dialogue*	parseRequest();
 
 	void	makeStartLine();
 	void 	makeReqHeader();
-	void	checkBody();
 	void	makeChunkedBody();
 	void	makeLengthBody();
 
@@ -37,7 +36,6 @@ private:
 
 	RequestReader&	operator=(const RequestReader &other);
 
-	int			client_fd;
 	Dialogue	*dial;
 	bool		chunked;
 	long		content_length;

@@ -100,6 +100,7 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
 	response.addHeader(std::string("Content-Type"), this->contentTypeHeader(".html"));
+	response.addHeader(std::string("Connection"), "close");
 
 	int fd = 0;
 	// struct stat buf;
@@ -130,6 +131,11 @@ void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t retur
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
 	response.addHeader(std::string("Location"), location.getReturnInfo().second);
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
+
 }
 
 
@@ -182,8 +188,12 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 void Server::makeGETResponse(Dialogue *dial, Location &location, std::string path)
 {
 	Response &response = dial->res;
-	response.addHeader("Date", this->dateHeader());
-	response.addHeader("Server", "hsonseyu Server");
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
 
 	if (checkPath(path) == Directory)
 	{
@@ -205,7 +215,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 		{
 			response.addHeader("Content-Type", this->contentTypeHeader(".html"));
 			response.addBody(this->makeAutoIndexPage(path, path, location));
-			response.addHeader("Content-Length", std::to_string(response.getBody().length()));
+			// response.addHeader("Content-Length", std::to_string(response.getBody().length()));
 			//200 ok
 		}
 		if (checkPath(path) == NotFound || checkPath(path) == Directory)
@@ -219,8 +229,8 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 
-	Resource resource(fd, dial);
-	EventHandlerInstance::getInstance().enableReadEvent(resource.getFD());
+	Resource *resource = new Resource(fd, dial);
+	EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
 }
 
 
@@ -229,8 +239,12 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 	//POST 는 대부분 cgi 처리를 원함. cgi 가 아닌 서버에서의 POST 의 경우 파일 생성
 	Response &response = dial->res;
 
-	response.addHeader("Date", this->dateHeader());
-	response.addHeader("Server", "hsonseyu Server");
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
 
 	int fd;
 	if (checkPath(resource_path) == File) //있으면 append
@@ -258,8 +272,12 @@ void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string 
 	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
 	Response &response = dial->res;
 
-	response.addHeader("Date", this->dateHeader());
-	response.addHeader("Server", "hsonseyu Server");
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
 
 	if (checkPath(resource_path) == Directory)
 	{

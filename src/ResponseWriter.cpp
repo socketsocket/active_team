@@ -15,11 +15,12 @@ ResponseWriter::~ResponseWriter()
 
 void	ResponseWriter::pushResponse(Response &res)
 {
-	if (res.getHeaders().find("connection")->second == "close")
+	if (res.getHeaders().find("Connection")->second == "close")
 		last_communication = true;
 	buffer += res.getStartLine();
 	buffer += "\r\n";
-	
+
+	res.addHeader("Content-Length", std::to_string(res.getBody().length()));
 	for (std::map<std::string, std::string>::iterator iter = res.getHeaders().begin(); iter != res.getHeaders().end(); iter++)
 	{
 		buffer += iter->first;
@@ -39,12 +40,15 @@ bool
 }
 
 bool
-	ResponseWriter::writeResponse(int write_size)
+	ResponseWriter::writeResponse(long write_size)
 {
+	write_size = (write_size < (ssize_t)buffer.size() ? write_size : buffer.size());
+
 	ssize_t	write_bytes = write(client_fd, &buffer[0], write_size);
 
 	if (write_bytes == 0)
 		throw SystemCallError("write");
+	// write_size > buffer.size() ?
 	else if ((size_t)write_bytes == buffer.size())
 	{
 		buffer.clear();

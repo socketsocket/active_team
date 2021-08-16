@@ -46,7 +46,7 @@ void
 }
 
 void
-	PortManager::readEvent(int read_size)
+	PortManager::readEvent(long read_size)
 {
 	(void)read_size;
 	Client	*client = new Client(this);
@@ -55,7 +55,7 @@ void
 }
 
 void
-	PortManager::writeEvent(int write_size)
+	PortManager::writeEvent(long write_size)
 {
 	(void)write_size;
 	throw UnexceptedEventOccured("PortManager write event");

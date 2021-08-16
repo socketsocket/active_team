@@ -5,8 +5,7 @@
 #include "Exception.hpp"
 
 RequestReader::RequestReader(int client_socket)
-	: client_fd(client_socket),
-	  dial(new Dialogue()),
+	: dial(new Dialogue(client_socket)),
 	  chunked(false),
 	  content_length(0),
 	  stat(PARSING_START)
@@ -36,12 +35,12 @@ static long
 	return (temp);
 }
 
-void	RequestReader::readRequest(int read_size)
+void	RequestReader::readRequest(long read_size)
 {
 	std::string::size_type	buffer_size = buffer.size();
 	buffer.resize(buffer_size + read_size);
 
-	int	read_bytes = read(this->client_fd, &buffer[buffer_size], read_size);
+	int	read_bytes = read(dial->client_fd, &buffer[buffer_size], read_size);
 
 	if (read_bytes <= 0)
 		throw SystemCallError("read");
@@ -54,7 +53,8 @@ void	RequestReader::makeStartLine()
 	std::string		start_line;
 	std::string		tmp;
 
-	pos = this->buffer.find("\r\n");
+	while ((pos = this->buffer.find("\r\n")) == 0)
+		this->buffer.erase(0, 2);
 	if (pos == std::string::npos)
 		return ;
 	start_line = this->buffer.substr(0, pos);
@@ -105,41 +105,42 @@ void	RequestReader::makeReqHeader()
 		string_tolower(&key[0], &key[key.size()]);
 		req.setHeaders(key, value);
 
-		this->buffer.erase(header_line.size() + 2);
+		this->buffer.erase(0, header_line.size() + 2);
 		pos = this->buffer.find("\r\n");
 	}
+
+	// if Header end
 	if (pos == 0)
-		stat = PARSING_BODY;
-}
-
-void	RequestReader::checkBody()
-{
-	typedef std::map<std::string, std::string>::iterator	iterator;
-
-	iterator	iter;
-	Request		&req = dial->req;
-
-	iter = req.getHeaders().find("transfer-encoding");
-	if (iter != req.getHeaders().end())
 	{
-		if (iter->second == "chunked")
+		typedef std::map<std::string, std::string>::iterator	iterator;
+
+		iterator	iter;
+
+		iter = req.getHeaders().find("transfer-encoding");
+		if (iter != req.getHeaders().end())
 		{
-			this->chunked = true;
-			return ;
+			if (iter->second == "chunked")
+			{
+				this->chunked = true;
+				stat = PARSING_BODY;
+				return ;
+			}
 		}
-	}
-	iter = req.getHeaders().find("content-length");
-	if (iter != req.getHeaders().end())
-	{
-		try
+		iter = req.getHeaders().find("content-length");
+		if (iter != req.getHeaders().end())
 		{
-			content_length = string_tolong(iter->second);
-			return ;
+			try
+			{
+				content_length = string_tolong(iter->second);
+				stat = PARSING_BODY;
+				return ;
+			}
+			catch (const std::exception& e)
+			{
+				throw BadRequest();
+			}
 		}
-		catch (const std::exception& e)
-		{
-			throw BadRequest();
-		}
+		stat = REQUEST_COMPLETE;
 	}
 }
 
@@ -179,30 +180,24 @@ void	RequestReader::makeLengthBody()
 	stat = REQUEST_COMPLETE;
 }
 
-
 Dialogue*	RequestReader::parseRequest(void)
 {
 	if (stat == PARSING_START)
 		this->makeStartLine();
 	if (stat == PARSING_HEADER)
-	{
 		this->makeReqHeader();
-		this->checkBody();
-	}
 	if (stat == PARSING_BODY)
 	{
 		if (chunked)
 			this->makeChunkedBody();
 		else if (content_length > 0)
 			this->makeLengthBody();
-		else
-			stat = REQUEST_COMPLETE;
 	}
 	if (stat == REQUEST_COMPLETE)
 	{
 		Dialogue	*rtn = dial;
 
-		dial = new Dialogue();
+		dial = new Dialogue(rtn->client_fd);
 		stat = PARSING_START;
 		return (rtn);
 	}

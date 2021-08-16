@@ -6,7 +6,7 @@
 #    By: seyu <seyu@student.42seoul.kr>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/10/10 23:07:12 by seheon            #+#    #+#              #
-#    Updated: 2021/08/15 17:32:26 by seyu             ###   ########.fr        #
+#    Updated: 2021/08/16 13:20:16 by seyu             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -117,7 +117,7 @@ $(DIR_OBJ)/%.o: %.cpp
 		$(PRINTF) '.' ; \
 		((itr = itr + 1)) ; \
 	done
-	@$(PRINTF) ' ] : $(DARKGRAY)$<$(NOCOLOR)'
+	@$(PRINTF) ' ] : $(DARKGRAY)$<$(NOCOLOR) '
 	@$(CC) $(CFLAGS) -I$(DIR_INC) -c $< -o $@
 
 $(NAME):	$(DIR_OBJ) $(OBJS)

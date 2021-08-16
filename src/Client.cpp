@@ -32,7 +32,7 @@ Client::~Client()
 }
 
 void
-	Client::readEvent(int read_size)
+	Client::readEvent(long read_size)
 {
 	reader.readRequest(read_size);
 	for (Dialogue *pingpong = reader.parseRequest(); pingpong != NULL; pingpong = reader.parseRequest())
@@ -43,7 +43,7 @@ void
 }
 
 void
-	Client::writeEvent(int write_size)
+	Client::writeEvent(long write_size)
 {
 	if (dialogues.empty() == true)
 		throw UnexceptedEventOccured("Client write during empty response queue");
@@ -116,6 +116,7 @@ void
 			Response &res = dial->res;
 			res.addHeader("Date", server->dateHeader());
 			res.addHeader("Server", "hsonseyu Server");
+			res.addHeader("Connection", "keep-alive");
 
 			CGI cgi(*(cgi_path), dial, pm->getPort());
 		}
@@ -123,7 +124,7 @@ void
 		{
 			std::string resource_path = dial->req.getUri();
 			resource_path.replace(0, location.getPath().length(), location.getRoot());
-
+			// root directory check in parsing
 			if (dial->req.getMethod() == Request::GET)
 				server->makeGETResponse(dial, location, resource_path);
 			else if (dial->req.getMethod() == Request::POST)
@@ -134,10 +135,9 @@ void
 
 			if (dial->status == Dialogue::READY_TO_RESPONSE)
 				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
-
 		}
 	}
-	catch (BadRequest)
+	catch (BadRequest &e)
 	{
 		server->makeErrorResponse(dial, location, 400);
 	}

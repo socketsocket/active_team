@@ -14,8 +14,8 @@ public:
 
 	int				getFD()	{ return (fd); }
 
-	virtual void	readEvent(int read_size) = 0;
-	virtual void	writeEvent(int write_size) = 0;
+	virtual void	readEvent(long read_size) = 0;
+	virtual void	writeEvent(long write_size) = 0;
 	virtual void	timerEvent() = 0;
 
 private:

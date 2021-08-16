@@ -19,8 +19,8 @@ public:
 
 	void	addServer(std::string server_name, Server *server);
 
-	virtual void	readEvent(int read_size);
-	virtual void	writeEvent(int write_size);
+	virtual void	readEvent(long read_size);
+	virtual void	writeEvent(long write_size);
 	virtual void	timerEvent();
 
 	Server*	getServer(std::string hostname);

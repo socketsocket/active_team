@@ -19,13 +19,16 @@ public:
 		READY_TO_WRITE,
 	};
 
-	Dialogue() : status(READING_REQUEST) {}
+	Dialogue(int client_fd) : client_fd(client_fd), status(READING_REQUEST) {}
 	~Dialogue() {}
 
-	Client		*client;
+	int			client_fd;
 	Request		req;
 	Response	res;
 	Status		status;
+private:
+	Dialogue();
+	Dialogue(const Dialogue &other);
 };
 
 #endif

@@ -26,8 +26,8 @@ public:
 	Client(PortManager *pm);
 	~Client();
 
-	virtual void	readEvent(int read_size);
-	virtual void	writeEvent(int write_size);
+	virtual void	readEvent(long read_size);
+	virtual void	writeEvent(long write_size);
 	virtual void	timerEvent();
 
 	enum	Status {

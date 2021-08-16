@@ -16,21 +16,26 @@ Resource::~Resource()
 {}
 
 void
-	Resource::readEvent(int read_size)
+	Resource::readEvent(long read_size)
 {
-	std::string	&buffer = dialogue->res.getBody();
+	std::string				&buffer = dialogue->res.getBody();
+	std::string::size_type	buffer_size = buffer.size();
+	ssize_t					read_bytes;
 
-	buffer.resize(buffer.size() + read_size);
-	read_size = read(getFD(), &buffer[buffer.size()], read_size);
+	buffer.resize(buffer_size + read_size);
+	read_bytes= read(getFD(), &buffer[buffer_size], read_size);
 
-	if (read_size == -1)
+	if (read_bytes == -1)
 		throw SystemCallError("read");
-	else if (read_size == 0)
-		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client->getFD());
+	else if (read_bytes == read_size)
+	{
+		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
+		delete this;
+	}
 }
 
 void
-	Resource::writeEvent(int write_size)
+	Resource::writeEvent(long write_size)
 {
 	std::string	&target = dialogue->req.getBody();
 	ssize_t		write_bytes = write(getFD(), &target[0], write_size);
