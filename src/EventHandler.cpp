@@ -5,14 +5,12 @@
 #include <fstream>
 #include <queue>
 
+#include "EventHandlerInstance.hpp"
 #include "EventHandler.hpp"
 #include "Exception.hpp"
 
-<<<<<<< HEAD
-=======
 /* static */
 
->>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 static inline void
 	tolower(std::string &s)
 {
@@ -31,6 +29,60 @@ static inline T
 	front = queue.front();
 	queue.pop();
 	return (front);
+}
+
+static Location
+	*parseLocation(std::queue<std::string> &config_queue)
+{
+	Location	*location = new Location;
+
+	if (front_pop(config_queue) != "{")
+		throw NoExpectedDirective("{");
+	for (std::string word; (word = front_pop(config_queue)) != "}"; )
+	{
+		if (word == "root")
+		{
+			location->setRoot(front_pop(config_queue));
+		}
+		else if (word == "index")
+		{
+			location->addIndex(front_pop(config_queue));
+		}
+		else if (word == "auto_index")
+		{
+			location->setAutoindex(front_pop(config_queue));
+		}
+		else if (word == "error_page")
+		{
+			location->setErrorPage(std::atoi(front_pop(config_queue).c_str()), front_pop(config_queue));
+		}
+		else if (word == "methods_allowed")
+		{
+			while (config_queue.front() != ";")
+			{
+				location->addMethod(front_pop(config_queue));
+			}
+		}
+		else if (word == "cgi_info")
+		{
+			location->setCGI(front_pop(config_queue), front_pop(config_queue));
+		}
+		else if (word == "return")
+		{
+			int	code = std::atoi(front_pop(config_queue).c_str());
+
+			if (config_queue.front() == ";")
+				location->setReturnInfo(code, "");
+			else
+				location->setReturnInfo(code, front_pop(config_queue));
+		}
+		else
+			throw BadDirective(word);
+
+		if (front_pop(config_queue) != ";")
+			throw NoExpectedDirective(";");
+	}
+	return (location);
 }
 
 static Server
@@ -89,65 +141,13 @@ static Server
 		else
 			throw BadDirective(word);
 
-		if (front_pop(config_queue) != ";")
+		if (word != "location" && front_pop(config_queue) != ";")
 			throw NoExpectedDirective(";");
 	}
 
 	if (ports.size() == 0)
 		ports.push_back(80);
 	return (server);
-}
-
-static Location
-	*parseLocation(std::queue<std::string> &config_queue)
-{
-	Location	*location = new Location;
-
-	for (std::string word; (word = front_pop(config_queue)) != "}"; )
-	{
-		if (word == "root")
-		{
-			location->setRoot(front_pop(config_queue));
-		}
-		else if (word == "index")
-		{
-			location->addIndex(front_pop(config_queue));
-		}
-		else if (word == "auto_index")
-		{
-			location->setAutoindex(front_pop(config_queue));
-		}
-		else if (word == "error_page")
-		{
-			location->setErrorPage(std::atoi(front_pop(config_queue).c_str()), front_pop(config_queue));
-		}
-		else if (word == "allowed_method")
-		{
-			while (config_queue.front() != ";")
-			{
-				location->addMethod(front_pop(config_queue));
-			}
-		}
-		else if (word == "cgi_info")
-		{
-			location->setCGI(front_pop(config_queue), front_pop(config_queue));
-		}
-		else if (word == "return")
-		{
-			int	code = std::atoi(front_pop(config_queue).c_str());
-
-			if (config_queue.front() == ";")
-				location->setReturnInfo(code, "");
-			else
-				location->setReturnInfo(code, front_pop(config_queue));
-		}
-		else
-			throw BadDirective(word);
-
-		if (front_pop(config_queue) != ";")
-			throw NoExpectedDirective(";");
-	}
-	return (location);
 }
 
 static void
@@ -164,7 +164,8 @@ static void
 		foundPM = portManagers.find(*port_itr);
 		if (foundPM == portManagers.end())
 		{
-			foundPM = portManagers.insert(std::make_pair(*port_itr, new PortManager(*port_itr))).first;
+			PortManager	*pm = new PortManager(*port_itr);
+			foundPM = portManagers.insert(std::make_pair(*port_itr, pm)).first;
 		}
 		for (	std::vector<std::string>::iterator name_itr = names.begin();
 				name_itr != names.end();
@@ -175,13 +176,12 @@ static void
 	}
 }
 
-<<<<<<< HEAD
-=======
 /* public */
 
->>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 EventHandler::EventHandler(std::string config_file_path)
 {
+	EventHandlerInstance::setInstance(this);
+
 	std::ifstream			config_file(config_file_path);
 	std::queue<std::string>	config_queue;
 
@@ -219,6 +219,25 @@ EventHandler::EventHandler(std::string config_file_path)
 	}
 }
 
+EventHandler::~EventHandler()
+{
+	for (	std::vector<FDManager *>::iterator itr = fds.begin();
+			itr != fds.end();
+			++itr)
+		delete *itr;
+	fds.clear();
+	for (	std::vector<Server *>::iterator itr = servers.begin();
+			itr != servers.end();
+			++itr)
+		delete *itr;
+	servers.clear();
+	for (	std::map<int, PortManager *>::iterator itr = portManagers.begin();
+			itr != portManagers.end();
+			++itr)
+		delete itr->second;
+	portManagers.clear();
+}
+
 void
 	EventHandler::start()
 {
@@ -229,20 +248,11 @@ void
 			itr != portManagers.end();
 			++itr)
 	{
-<<<<<<< HEAD
-		registerFD(itr->second);
-		addReadEvent(itr->second->getFD());
-=======
 		enableReadEvent(itr->second->getFD());
->>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 	}
 
 	struct kevent	event_list[MAX_EVENT_SIZE];
 	struct kevent	*curr_event;
-<<<<<<< HEAD
-	FDHandler		*fd_handler;
-=======
->>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7
 
 	while (true)
 	{
@@ -254,68 +264,16 @@ void
 		for (int i = 0; i < num_of_event; ++i)
 		{
 			curr_event = event_list + i;
-<<<<<<< HEAD
-			fd_handler = fds[curr_event->ident];
-			if (dynamic_cast<PortManager *>(fd_handler))
+			if ((curr_event->flags & EV_ERROR) || (curr_event->flags & EV_EOF))
 			{
-				PortManager	*pm = dynamic_cast<PortManager *>(fd_handler);
-
-				if (curr_event->filter & EVFILT_READ)
-				{
-					int			client_fd = pm->acceptClient();
-
-					registerFD(new Client(client_fd, pm));
-					addReadEvent(client_fd);
-				}
-				else
-					throw UnknownEventIdentifier();
+				delete fds[curr_event->ident];
+				continue ;
 			}
-			else if (dynamic_cast<Client *>(fd_handler))
-			{
-				Client	*client = dynamic_cast<Client *>(fd_handler);
 
-				if (curr_event->filter & EVFILT_READ)
-				{
-					client->readRequest();
-				}
-				else if (curr_event->filter & EVFILT_WRITE)
-				{
-					client->writeResponse();
-				}
-				else if (curr_event->filter & EVFILT_TIMER)
-				{
-					// client->write408();
-					unregisterFD(client->getFD());
-					delete client;
-				}
-				else
-					throw UnknownEventIdentifier();
-			}
-			else if (dynamic_cast<Resource *>(fd_handler))
-			{
-				Resource	*resource = dynamic_cast<Resource *>(fd_handler);
-
-				if (curr_event->filter & EVFILT_READ)
-				{
-					resource->readResource();
-				}
-				else if (curr_event->filter & EVFILT_WRITE)
-				{
-					resource->writeResource();
-				}
-				else
-					throw UnknownEventIdentifier();
-			}
-			else
-				throw UnknownEventIdentifier();
-		}
-	}
-}
-=======
 			if (curr_event->filter == EVFILT_READ)
-				fds[curr_event->ident]->readEvent();
+				fds[curr_event->ident]->readEvent(curr_event->data);
 			else if (curr_event->filter == EVFILT_WRITE)
-				fds[curr_event->ident]->writeEvent();
+				fds[curr_event->ident]->writeEvent(curr_event->data);
 			else if (curr_event->filter == EVFILT_TIMER)
 				fds[curr_event->ident]->timerEvent();
 		}
@@ -327,8 +285,8 @@ void
 {
 	if (fdm->getFD() < 0)
 		throw BadFileDescriptor();
-	if (fds.size() < fdm->getFD())
-		fds.resize(fdm->getFD(), NULL);
+	if (fds.size() <= (size_t)fdm->getFD())
+		fds.resize(fdm->getFD() + 1, NULL);
 	fds[fdm->getFD()] = fdm;
 }
 
@@ -369,4 +327,3 @@ void
 }
 
 /* private */
->>>>>>> 3ccfd7c90c3f5427321da1b7b2d63e6580aad2e7

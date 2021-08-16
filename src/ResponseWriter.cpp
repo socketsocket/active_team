@@ -1,41 +1,60 @@
+#include <unistd.h>
+
 #include "ResponseWriter.hpp"
+#include "Response.hpp"
+#include "Exception.hpp"
 
-ResponseWriter::ResponseWriter()
-{
-}
-
-ResponseWriter::ResponseWriter(const ResponseWriter &ref)
-{
-	*this = ref;
-}
+ResponseWriter::ResponseWriter(int client_fd)
+	: client_fd(client_fd),
+	  last_communication(false)
+{}
 
 ResponseWriter::~ResponseWriter()
 {
 }
 
-ResponseWriter& ResponseWriter::operator=(const ResponseWriter &ref)
-{
-	return (*this);
-}
-
 void	ResponseWriter::pushResponse(Response &res)
 {
-	std::string	entire_response;
+	if (res.getHeaders().find("Connection")->second == "close")
+		last_communication = true;
+	buffer += res.getStartLine();
+	buffer += "\r\n";
 
-	entire_response += res.getStartLine();
-	entire_response += "\r\n";
-	
+	res.addHeader("Content-Length", std::to_string(res.getBody().length()));
 	for (std::map<std::string, std::string>::iterator iter = res.getHeaders().begin(); iter != res.getHeaders().end(); iter++)
 	{
-		entire_response += iter->first;
-		entire_response += ": ";
-		entire_response += iter->second;
-		entire_response += "\r\n";
+		buffer += iter->first;
+		buffer += ": ";
+		buffer += iter->second;
+		buffer += "\r\n";
 	}
-	entire_response += "\r\n";
+	buffer += "\r\n";
 
-	entire_response += res.getBody();
+	buffer += res.getBody();
+}
 
-	this->buffer.push_back(entire_response);
-	
+bool
+	ResponseWriter::emptyBuffer()
+{
+	return (this->buffer.empty());
+}
+
+bool
+	ResponseWriter::writeResponse(long write_size)
+{
+	write_size = (write_size < (ssize_t)buffer.size() ? write_size : buffer.size());
+
+	ssize_t	write_bytes = write(client_fd, &buffer[0], write_size);
+
+	if (write_bytes == 0)
+		throw SystemCallError("write");
+	// write_size > buffer.size() ?
+	else if ((size_t)write_bytes == buffer.size())
+	{
+		buffer.clear();
+		return (last_communication);
+	}
+	else
+		buffer.erase(0, write_bytes);
+	return (false);
 }

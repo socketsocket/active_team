@@ -12,34 +12,40 @@ Resource::Resource(int fd, Dialogue *dialogue)
 	  dialogue(dialogue)
 {}
 
+Resource::~Resource()
+{}
+
 void
-	Resource::readEvent()
+	Resource::readEvent(long read_size)
 {
-	int	read_size = 1; // read event size parameter
+	std::string				&buffer = dialogue->res.getBody();
+	std::string::size_type	buffer_size = buffer.size();
+	ssize_t					read_bytes;
 
-	std::string	&buffer = dialogue->res.getBody();
+	buffer.resize(buffer_size + read_size);
+	read_bytes= read(getFD(), &buffer[buffer_size], read_size);
 
-	buffer.resize(buffer.size() + read_size);
-	read_size = read(getFD(), &buffer[buffer.size()], read_size);
-
-	if (read_size == -1)
+	if (read_bytes == -1)
 		throw SystemCallError("read");
-	else if (read_size == 0)
-		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client->getFD());
+	else if (read_bytes == read_size)
+	{
+		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
+		delete this;
+	}
 }
 
 void
-	Resource::writeEvent()
+	Resource::writeEvent(long write_size)
 {
 	std::string	&target = dialogue->req.getBody();
-	int			write_size = write(getFD(), &target[0], target.size());
+	ssize_t		write_bytes = write(getFD(), &target[0], write_size);
 
-	if (write_size == -1)
+	if (write_bytes == -1)
 		throw SystemCallError("write");
-	else if (write_size == target.size())
+	else if ((size_t)write_bytes == target.size())
 		target.clear();
 	else
-		target.erase(0, write_size);
+		target.erase(0, write_bytes);
 }
 
 void

@@ -9,13 +9,16 @@
 # include <iostream>
 # include <fcntl.h>
 
+struct	Dialogue;
+class	Location;
+// class	ResponseWriter;
+
 # include "FDManager.hpp"
-# include "RequestReader.hpp"
-# include "ResponseWriter.hpp"
 # include "Dialogue.hpp"
-# include "CGI.hpp"
 # include "Location.hpp"
 # include "PortManager.hpp"
+# include "RequestReader.hpp"
+# include "ResponseWriter.hpp"
 
 class	Client : public FDManager
 {
@@ -23,10 +26,8 @@ public:
 	Client(PortManager *pm);
 	~Client();
 
-	Client&	operator=(const Client& other);
-
-	virtual void	readEvent();
-	virtual void	writeEvent();
+	virtual void	readEvent(long read_size);
+	virtual void	writeEvent(long write_size);
 	virtual void	timerEvent();
 
 	enum	Status {
@@ -40,15 +41,13 @@ public:
 private:
 	Client();
 	Client(const Client& other);
+
 	Client&	operator=(const Client& other);
 
-	void 	prepareResponse(PortManager *pm, Dialogue *dial);
-	int		isCGIRequest(Request &req, Location &location);
+	void 				prepareResponse(Dialogue *dial);
+	std::string*		isCGIRequest(Request &req, Location &location);
 
-
-	int	openSocket(int server_socket);
-
-	PortManager				*pm;
+	PortManager			*pm;
 	RequestReader		reader;
 	ResponseWriter		writer;
 

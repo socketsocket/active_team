@@ -57,7 +57,7 @@ static std::string
 	}
 }
 
-CGI::CGI(const std::string &script_path, Dialogue *dialogue, std::string &server_name, int server_port)
+CGI::CGI(const std::string &script_path, Dialogue *dialogue, int server_port)
 	: FDManager(openPipe(script_stdin)),
 	  dialogue(dialogue)
 {
@@ -86,20 +86,20 @@ CGI::CGI(const std::string &script_path, Dialogue *dialogue, std::string &server
 		setenv("PATH_INFO", "", 1);
 		setenv("PATH_TRANSLATED", "", 1);
 		setenv("QUERY_STRING", uri.substr(uri.find('?')).c_str(), 1);
-		setenv("REMOTE_ADDR", getAddr(dialogue->client->getFD()).c_str(), 1);
+		setenv("REMOTE_ADDR", getAddr(dialogue->client_fd).c_str(), 1);
 		setenv("REMOTE_HOST", "", 1);
 		setenv("REMOTE_IDENT", "", 1);
 		setenv("REMOTE_USER", "", 1);
 		setenv("REQUEST_METHOD", getMethod(dialogue->req.getMethod()).c_str(), 1);
 		setenv("SCRIPT_NAME", uri.substr(0, uri.find('?')).c_str(), 1);
-		setenv("SERVER_NAME", server_name.c_str(), 1);
+		setenv("SERVER_NAME", req_header.find("host")->second.c_str(), 1);
 		setenv("SERVER_PORT", std::to_string(server_port).c_str(), 1);
 		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
 		setenv("SERVER_SOFTWARE", "webserv/1.0", 1);
 
 		dup2(script_stdin, 0);
 		// close(script_stdin);
-		dup2(dialogue->client->getFD(), 1);
+		dup2(dialogue->client_fd, 1);
 		// close(dialogue->client->getFD());
 
 		char* const	argv[3] = { const_cast<char *>(script_path.c_str()), getenv("SCRIPT_NAME"), NULL };
@@ -114,24 +114,30 @@ CGI::CGI(const std::string &script_path, Dialogue *dialogue, std::string &server
 	}
 }
 
-void
-	CGI::readEvent()
+CGI::~CGI()
 {
+	close(script_stdin);
+}
+
+void
+	CGI::readEvent(long read_size)
+{
+	(void)read_size;
 	throw UnexceptedEventOccured("CGI Read event");
 }
 
 void
-	CGI::writeEvent()
+	CGI::writeEvent(long write_size)
 {
 	std::string	&write_buffer = dialogue->req.getBody();
-	int			write_size;
+	ssize_t		write_byte;
 
-	if ((write_size = write(getFD(), &write_buffer[0], WRITE_BUFFER_SIZE)) == -1)
+	if ((write_byte = write(getFD(), &write_buffer[0], write_size)) == -1)
 		throw SystemCallError("write");
-	else if (write_size == write_buffer.size())
+	else if ((size_t)write_byte == write_buffer.size())
 		dialogue->req.getBody().clear();
 	else
-		dialogue->req.getBody().erase(0, write_size);
+		dialogue->req.getBody().erase(0, write_byte);
 
 	if (dialogue->req.getBody().size() > 0)
 		EventHandlerInstance::getInstance().enableWriteEvent(getFD());

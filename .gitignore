@@ -1,5 +1,7 @@
+webserv
 .DS_Store
 *\ *
+*.temp
 .vscode
 
 # Prerequisites

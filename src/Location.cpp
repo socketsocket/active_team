@@ -2,8 +2,7 @@
 #include "Exception.hpp"
 
 Location::Location()
-	: auto_index(false),
-	  return_info(std::make_pair(200, ""))
+	: auto_index(false)
 {}
 
 Location::~Location()	{}
@@ -81,17 +80,21 @@ std::string					Location::getRoot()
 {
 	return (root);
 }
-std::vector<std::string>	Location::getIndex()
+std::vector<std::string>&	Location::getIndex()
 {
 	return (index);
 }
-std::string					Location::getCGIExecPath(std::string extension)
+std::string					*Location::getCGIExecPath(std::string extension)
 {
 	std::map<std::string, std::string>::iterator iter = cgi_info.find(extension);
-	return (iter->second);
+
+	if (iter == cgi_info.end())
+		return (NULL);
+	else
+		return (&iter->second);
 }
 
-std::map<std::string, std::string>	Location::getCGIInfo()
+std::map<std::string, std::string>&	Location::getCGIInfo()
 {
 	return (cgi_info);
 }
@@ -104,11 +107,18 @@ size_t						Location::getReturnCode()
 {
 	return (return_info.first);
 }
-std::map<int, std::string>	Location::getErrorPages()
+
+std::pair<int, std::string>&
+	Location::getReturnInfo()
+{
+	return (return_info);
+}
+
+std::map<int, std::string>&	Location::getErrorPages()
 {
 	return (error_pages);
 }
-std::set<Request::Method>	Location::getMethodAllowed()
+std::set<Request::Method>&	Location::getMethodAllowed()
 {
 	return (allowed_methods);
 }

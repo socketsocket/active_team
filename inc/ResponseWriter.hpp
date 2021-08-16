@@ -1,18 +1,23 @@
 #ifndef RESPONSEWRITER_HPP
 # define RESPONSEWRITER_HPP
 
+# include <deque>
+# include <map>
+# include <string>
+
+struct	Dialogue;
+
 # include "Response.hpp"
-# include "Dialogue.hpp"
 
 class	ResponseWriter
 {
 public:
-	ResponseWriter(Dialogue *dialogue_to_write);
+	ResponseWriter(int client_socket);
 	~ResponseWriter();
 
 	void	pushResponse(Response &res);
 	bool	emptyBuffer();
-	void	writeResponse();
+	bool	writeResponse(long write_size);
 
 private:
 	ResponseWriter();
@@ -20,7 +25,9 @@ private:
 
 	ResponseWriter&	operator=(const ResponseWriter &other);
 
-	std::deque<std::string>	buffer;
+	int			client_fd;
+	bool		last_communication;
+	std::string	buffer;
 };
 
 #endif

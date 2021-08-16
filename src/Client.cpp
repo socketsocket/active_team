@@ -1,7 +1,9 @@
 #include <sys/socket.h>
-#include "Exception.hpp"
 
+#include "EventHandlerInstance.hpp"
+#include "Exception.hpp"
 #include "Client.hpp"
+#include "CGI.hpp"
 
 static int
 	openSocket(int server_socket)
@@ -17,7 +19,7 @@ Client::Client(PortManager *pm)
 	: FDManager(openSocket(pm->getFD())),
 	  pm(pm),
 	  reader(this->getFD()),
-	  writer(NULL)
+	  writer(this->getFD())
 {}
 
 Client::~Client()
@@ -30,18 +32,18 @@ Client::~Client()
 }
 
 void
-	Client::readEvent()
+	Client::readEvent(long read_size)
 {
-	reader.readRequest();
+	reader.readRequest(read_size);
 	for (Dialogue *pingpong = reader.parseRequest(); pingpong != NULL; pingpong = reader.parseRequest())
 	{
 		dialogues.push(pingpong);
-		// Make Response
+		this->prepareResponse(pingpong);
 	}
 }
 
 void
-	Client::writeEvent()
+	Client::writeEvent(long write_size)
 {
 	if (dialogues.empty() == true)
 		throw UnexceptedEventOccured("Client write during empty response queue");
@@ -50,6 +52,10 @@ void
 		writer.pushResponse(dialogues.front()->res);
 		dialogues.pop();
 	}
+	if (writer.writeResponse(write_size))
+		delete this;
+	else if (dialogues.empty() == false && dialogues.front()->status == Dialogue::READY_TO_WRITE)
+		EventHandlerInstance::getInstance().enableWriteEvent(getFD());
 }
 
 void
@@ -59,7 +65,8 @@ void
 	// Client Destruct
 }
 
-int		Client::isCGIRequest(Request &request, Location &location)
+std::string*
+	Client::isCGIRequest(Request &request, Location &location)
 {
 	size_t dot;
 
@@ -68,61 +75,76 @@ int		Client::isCGIRequest(Request &request, Location &location)
 	size_t extension = dot;
 	while (request.getUri()[extension] != '?' && extension != request.getUri().length())
 		extension++;
-	
-	std::string cgi_ext = request.getUri().substr(dot, extension - dot);
-	
-	std::map<std::string, std::string>::iterator cgi_iter = location.getCGIInfo().find(cgi_ext);
-	if (cgi_iter == location.getCGIInfo().end())
-		return (0);
-	
-	return (1);
-}
-void 	Client::prepareResponse(PortManager *pm, Dialogue *dial)
-{
-	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("HOST");
-	Server		*server = pm->getServer(iter->second);
-	Location	location = server->getLocation(dial->req.getUri());
 
+	std::string cgi_ext = request.getUri().substr(dot, extension - dot);
+
+	std::string* cgi_path = location.getCGIExecPath(cgi_ext);
+	if (cgi_path == 0)
+		throw BadRequest();
+
+	return (cgi_path);
+}
+
+void
+	Client::prepareResponse(Dialogue *dial)
+{
+	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("host");
+	Server		*server = pm->getServer(iter->second);
+	Location	&location = *(server->getLocation(dial->req.getUri()));
+
+	//maybe 400
+	if (dial->res.getStatusCode() != 0)
+		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
 
 	// Allowed Method (405 error)
-	if (location.getMethodAllowed().empty() ||
-			std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), dial->req.getMethod()) == location.getMethodAllowed().end())
+	else if (std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), dial->req.getMethod()) == location.getMethodAllowed().end())
 		server->makeErrorResponse(dial, location, 405);
-	
+
 	// Client Body Limit
-	if (dial->req.getBody().length() > server->getBodyLimit())
+	else if (dial->req.getBody().length() > server->getBodyLimit())
 		server->makeErrorResponse(dial, location, 413);
 
 	// Server Block return
-	if (server->getReturnCode() != 0 || location.getReturnCode() != 0)
+	else if (server->getReturnCode() != 0 || location.getReturnCode() != 0)
 		server->makeReturnResponse(dial, location, server->getReturnCode());
 
+	if (dial->status == Dialogue::READY_TO_RESPONSE)
+		return EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
+
 	// response
-	if (this->isCGIRequest(dial->req, location))
+	try
 	{
-		//add headers
-		Response &res = dial->res;
-		res.addHeader("Date", server->dateHeader());
-		res.addHeader("Server", "hsonseyu Server");
+		std::string*	cgi_path;
+		if ((cgi_path = this->isCGIRequest(dial->req, location)) != 0)
+		{
+			//add headers
+			Response &res = dial->res;
+			res.addHeader("Date", server->dateHeader());
+			res.addHeader("Server", "hsonseyu Server");
+			res.addHeader("Connection", "keep-alive");
 
-		//CGI(dial); 다시!
+			CGI cgi(*(cgi_path), dial, pm->getPort());
+		}
+		else
+		{
+			std::string resource_path = dial->req.getUri();
+			resource_path.replace(0, location.getPath().length(), location.getRoot());
+			// root directory check in parsing
+			if (dial->req.getMethod() == Request::GET)
+				server->makeGETResponse(dial, location, resource_path);
+			else if (dial->req.getMethod() == Request::POST)
+				server->makePOSTResponse(dial, location, resource_path);
+			else if (dial->req.getMethod() == Request::DELETE)
+				server->makeDELETEResponse(dial, location, resource_path);
+			// dial->req.setStatus(NEED_RESOURCE);
+
+			if (dial->status == Dialogue::READY_TO_RESPONSE)
+				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
+		}
 	}
-	else
+	catch (BadRequest &e)
 	{
-		std::string resource_path = dial->req.getUri();
-		resource_path.replace(0, location.getPath().length(), location.getRoot());
-		
-		if (dial->req.getMethod() == Request::GET)
-			server->makeGETResponse(dial, location, resource_path);
-		else if (dial->req.getMethod() == Request::POST)
-			server->makePOSTResponse(dial, location, resource_path);
-		else if (dial->req.getMethod() == Request::DELETE)
-			server->makeDELETEResponse(dial, location, resource_path);
-		dial->req.setStatus(NEED_RESOURCE);
-
-		if (dial->status == Dialogue::ReadyToResponse)
-			EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
-
+		server->makeErrorResponse(dial, location, 400);
 	}
 }
 

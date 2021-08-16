@@ -1,6 +1,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <algorithm>
+
 #include "EventHandlerInstance.hpp"
 #include "Exception.hpp"
 #include "PortManager.hpp"
@@ -31,7 +33,10 @@ static int
 
 /* public */
 
-PortManager::PortManager(int port) : FDManager(openSocket(port))
+PortManager::PortManager(int port) : FDManager(openSocket(port)), port(port)
+{}
+
+PortManager::~PortManager()
 {}
 
 void
@@ -41,16 +46,18 @@ void
 }
 
 void
-	PortManager::readEvent()
+	PortManager::readEvent(long read_size)
 {
+	(void)read_size;
 	Client	*client = new Client(this);
 
 	EventHandlerInstance::getInstance().enableReadEvent(client->getFD());
 }
 
 void
-	PortManager::writeEvent()
+	PortManager::writeEvent(long write_size)
 {
+	(void)write_size;
 	throw UnexceptedEventOccured("PortManager write event");
 }
 
@@ -58,6 +65,28 @@ void
 	PortManager::timerEvent()
 {
 	throw UnexceptedEventOccured("PortManager timer event");
+}
+
+Server*
+	PortManager::getServer(std::string hostname)
+{
+	typedef	std::pair<std::string, Server *>	DNS;
+
+	// assert(servers.size() == 0);
+
+	for (	std::vector<DNS>::iterator itr = servers.begin();
+			itr != servers.end();
+			++itr)
+	{
+		if (itr->first == hostname)
+			return (itr->second);
+	}
+	return (servers.front().second);
+}
+
+int	PortManager::getPort()
+{
+	return (port);
 }
 
 /* priavte */
