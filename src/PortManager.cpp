@@ -52,6 +52,7 @@ void
 	Client	*client = new Client(this);
 
 	EventHandlerInstance::getInstance().enableReadEvent(client->getFD());
+	EventHandlerInstance::getInstance().setTimerEvent(client->getFD());
 }
 
 void

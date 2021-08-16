@@ -178,7 +178,7 @@ static void
 
 /* public */
 
-EventHandler::EventHandler(std::string config_file_path)
+EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_second(60)
 {
 	EventHandlerInstance::setInstance(this);
 
@@ -317,11 +317,11 @@ void
 }
 
 void
-	EventHandler::setTimerEvent(int fd, int second)
+	EventHandler::setTimerEvent(int fd)
 {
 	struct kevent	temp;
 
-	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, second, NULL);
+	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, socket_timeout_in_second, NULL);
 	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
 		throw SystemCallError("kevent");
 }

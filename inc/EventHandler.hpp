@@ -32,7 +32,7 @@ public:
 
 	void	enableReadEvent(int fd);
 	void	enableWriteEvent(int fd);
-	void	setTimerEvent(int fd, int second);
+	void	setTimerEvent(int fd);
 
 private:
 	EventHandler();
@@ -41,6 +41,8 @@ private:
 	std::vector<Server *>			servers;
 	std::map<int, PortManager *>	portManagers;
 	int								kq;
+
+	const int	socket_timeout_in_second;
 };
 
 #endif
