@@ -252,7 +252,6 @@ void
 	}
 
 	struct kevent	event_list[MAX_EVENT_SIZE];
-	struct kevent	*curr_event;
 
 	while (true)
 	{
@@ -261,10 +260,11 @@ void
 		if ((num_of_event = kevent(kq, NULL, 0, event_list, MAX_EVENT_SIZE, NULL)) == -1)
 			throw SystemCallError("kevent");
 
-		for (int i = 0; i < num_of_event; ++i)
+		for (struct kevent *curr_event = event_list; curr_event != event_list + MAX_EVENT_SIZE; ++curr_event)
 		{
-			curr_event = event_list + i;
-			if ((curr_event->flags & EV_ERROR) || (curr_event->flags & EV_EOF))
+			if ((curr_event->flags & EV_ERROR)
+				|| (curr_event->flags & EV_EOF)
+				|| (fds[curr_event->ident] == NULL))
 			{
 				delete fds[curr_event->ident];
 				continue ;
