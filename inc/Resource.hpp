@@ -14,7 +14,7 @@ public:
 	enum Type { READ, OVERWRITE, APPEND };
 
 	Resource(int fd, Dialogue *dialogue);
-	~Resource();
+	virtual ~Resource();
 
 	virtual void	readEvent(long read_size);
 	virtual void	writeEvent(long write_size);

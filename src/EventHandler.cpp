@@ -260,7 +260,7 @@ void
 		if ((num_of_event = kevent(kq, NULL, 0, event_list, MAX_EVENT_SIZE, NULL)) == -1)
 			throw SystemCallError("kevent");
 
-		for (struct kevent *curr_event = event_list; curr_event != event_list + num_of_event; ++curr_event)
+		for (struct kevent *curr_event = event_list; curr_event < (event_list + num_of_event); ++curr_event)
 		{
 			if ((curr_event->flags & EV_ERROR)
 				|| (curr_event->flags & EV_EOF)

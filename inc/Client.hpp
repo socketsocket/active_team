@@ -24,7 +24,7 @@ class	Client : public FDManager
 {
 public:
 	Client(PortManager *pm);
-	~Client();
+	virtual ~Client();
 
 	virtual void	readEvent(long read_size);
 	virtual void	writeEvent(long write_size);

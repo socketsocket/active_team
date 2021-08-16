@@ -12,7 +12,7 @@ public:
 	struct Query { std::string name; std::string value; };
 
 	CGI(const std::string &script_path, Dialogue *dialogue, int server_port);
-	~CGI();
+	virtual ~CGI();
 
 	void	setPrintFD(int fd);
 	void	addQuery(std::string query_string);
