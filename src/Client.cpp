@@ -110,6 +110,9 @@ void
 	//maybe 400
 	if (dial->res.getStatusCode() != 0)
 		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
+	
+	else if (&location == nullptr)
+		server->makeErrorResponse(dial, location, 404);
 
 	// Allowed Method (405 error)
 	else if (std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), dial->req.getMethod()) == location.getMethodAllowed().end())
