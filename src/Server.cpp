@@ -213,6 +213,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 		if (found == false && location.isAutoIndex() == true)
 		{
 			response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+			makeGeneralHeaders(dial);
 			response.addHeader("Content-Type", this->contentTypeHeader(".html"));
 			response.addBody(this->makeAutoIndexPage(path, path, location));
 			dial->status = Dialogue::READY_TO_RESPONSE;
@@ -228,12 +229,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 		return this->makeErrorResponse(dial, location, 404);
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
+	makeGeneralHeaders(dial);
 
 	Resource *resource = new Resource(fd, dial);
 	EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
@@ -253,19 +249,14 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 	}
 	else if (checkPath(resource_path) == NotFound) //없으면 create
 	{
-		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK)) == -1)
+		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK, 0644)) == -1)
 			return this->makeErrorResponse(dial, location, 500);
 	}
 	else
 		return this->makeErrorResponse(dial, location, 403);
 
 	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
+	makeGeneralHeaders(dial);
 
 	Resource *resource = new Resource(fd, dial);
 	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
@@ -286,15 +277,22 @@ void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string 
 		unlink(resource_path.c_str());
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+	makeGeneralHeaders(dial);
+	response.addBody(this->makeHTMLPage("File deleted."));
+
+	dial->status = Dialogue::READY_TO_RESPONSE;
+}
+
+void	Server::makeGeneralHeaders(Dialogue *dial)
+{
+	Response &response = dial->res;
+	
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
 	if (dial->req.keepConnection())
 		response.addHeader(std::string("Connection"), "keep-alive");
 	else
 		response.addHeader(std::string("Connection"), "close");
-	response.addBody(this->makeHTMLPage("File deleted."));
-
-	dial->status = Dialogue::READY_TO_RESPONSE;
 }
 
 int		Server::checkPath(std::string path)
@@ -544,5 +542,4 @@ std::map<int, std::string>
 {
 	return (error_page);
 }
-
 
