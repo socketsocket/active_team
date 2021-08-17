@@ -150,7 +150,7 @@ static Server
 
 static void
 	connectPortWithServer(
-		std::map<int, PortManager *> &portManagers,
+		std::map<int, PortManager *> &port_managers,
 		std::vector<int> &ports,
 		std::vector<std::string> &names,
 		Server *server )
@@ -159,11 +159,11 @@ static void
 	{
 		std::map<int, PortManager *>::iterator	foundPM;
 
-		foundPM = portManagers.find(*port_itr);
-		if (foundPM == portManagers.end())
+		foundPM = port_managers.find(*port_itr);
+		if (foundPM == port_managers.end())
 		{
 			PortManager	*pm = new PortManager(*port_itr);
-			foundPM = portManagers.insert(std::make_pair(*port_itr, pm)).first;
+			foundPM = port_managers.insert(std::make_pair(*port_itr, pm)).first;
 		}
 		for (	std::vector<std::string>::iterator name_itr = names.begin();
 				name_itr != names.end();
@@ -176,7 +176,7 @@ static void
 
 /* public */
 
-EventHandler::EventHandler(std::string config_file_path)
+EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_second(60)
 {
 	EventHandlerInstance::setInstance(this);
 
@@ -209,7 +209,7 @@ EventHandler::EventHandler(std::string config_file_path)
 				Server	*server = parseServer(config_queue, ports, names);
 
 				servers.push_back(server);
-				connectPortWithServer(portManagers, ports, names, server);
+				connectPortWithServer(port_managers, ports, names, server);
 			}
 		}
 		else
@@ -229,11 +229,11 @@ EventHandler::~EventHandler()
 			++itr)
 		delete *itr;
 	servers.clear();
-	for (	std::map<int, PortManager *>::iterator itr = portManagers.begin();
-			itr != portManagers.end();
+	for (	std::map<int, PortManager *>::iterator itr = port_managers.begin();
+			itr != port_managers.end();
 			++itr)
 		delete itr->second;
-	portManagers.clear();
+	port_managers.clear();
 }
 
 void
@@ -242,8 +242,8 @@ void
 	if ((kq = kqueue()) == -1)
 		throw SystemCallError("kqueue");
 
-	for (	std::map<int, PortManager *>::iterator itr = portManagers.begin();
-			itr != portManagers.end();
+	for (	std::map<int, PortManager *>::iterator itr = port_managers.begin();
+			itr != port_managers.end();
 			++itr)
 	{
 		enableReadEvent(itr->second->getFD());
@@ -258,11 +258,11 @@ void
 		if ((num_of_event = kevent(kq, NULL, 0, event_list, MAX_EVENT_SIZE, NULL)) == -1)
 			throw SystemCallError("kevent");
 
-		for (struct kevent *curr_event = event_list; curr_event != event_list + num_of_event; ++curr_event)
+		for (struct kevent *curr_event = event_list; curr_event < (event_list + num_of_event); ++curr_event)
 		{
-			if (fds[curr_event->ident] == NULL)
-				continue ;
-			if ((curr_event->flags & EV_ERROR) || (curr_event->flags & EV_EOF))
+			if ((curr_event->flags & EV_ERROR)
+				|| (curr_event->flags & EV_EOF)
+				|| (fds[curr_event->ident] == NULL))
 			{
 				delete fds[curr_event->ident];
 				continue ;
@@ -315,11 +315,11 @@ void
 }
 
 void
-	EventHandler::setTimerEvent(int fd, int second)
+	EventHandler::setTimerEvent(int fd)
 {
 	struct kevent	temp;
 
-	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, second, NULL);
+	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, socket_timeout_in_second, NULL);
 	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
 		throw SystemCallError("kevent");
 }

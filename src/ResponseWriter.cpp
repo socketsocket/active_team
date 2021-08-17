@@ -48,7 +48,6 @@ bool
 
 	if (write_bytes == 0)
 		throw SystemCallError("write");
-	// write_size > buffer.size() ?
 	else if ((size_t)write_bytes == buffer.size())
 	{
 		buffer.clear();

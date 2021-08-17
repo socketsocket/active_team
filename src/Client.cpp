@@ -34,6 +34,7 @@ Client::~Client()
 void
 	Client::readEvent(long read_size)
 {
+	EventHandlerInstance::getInstance().setTimerEvent(this->getFD());
 	reader.readRequest(read_size);
 	for (Dialogue *pingpong = reader.parseRequest(); pingpong != NULL; pingpong = reader.parseRequest())
 	{
@@ -61,8 +62,21 @@ void
 void
 	Client::timerEvent()
 {
-	// timeout Response
-	// Client Destruct
+	while (dialogues.empty() == false)
+	{
+		delete dialogues.front();
+		dialogues.pop();
+	}
+
+	Dialogue *pingpong = new Dialogue(this->getFD());
+
+	pingpong->req.setMethod(Request::GET);
+	pingpong->req.setUri("/");
+	pingpong->req.setHttpVersion("http/1.1");
+	pingpong->req.setHeaders("host", "");
+	pingpong->res.setStatusCode(408);
+	dialogues.push(pingpong);
+	this->prepareResponse(pingpong);
 }
 
 std::string*

@@ -544,4 +544,3 @@ std::map<int, std::string>
 	return (error_page);
 }
 
-
