@@ -47,6 +47,7 @@ public:
 	void		makePOSTResponse(Dialogue *, Location &, std::string);
 	void		makeDELETEResponse(Dialogue *, Location &, std::string);
 	// Response	makeCGIResponse();
+	void		makeGeneralHeaders(Dialogue *dial);
 
 	std::string					statusMessage(size_t code);
 	std::string					contentTypeHeader(std::string extension);
