@@ -125,9 +125,7 @@ static Server
 			if (config_queue.front() != "{")
 				throw NoExpectedDirective("{");
 			else
-			{
 				server->addLocation(location_path, parseLocation(config_queue));
-			}
 		}
 		else if (word == "return")
 		{

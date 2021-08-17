@@ -13,6 +13,7 @@ Server::~Server()
 void
 	Server::addLocation(std::string path, Location *loc)
 {
+	loc->setPath(path);
 	this->locations.insert(std::make_pair(path, loc));
 }
 
