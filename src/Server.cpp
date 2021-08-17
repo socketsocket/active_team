@@ -253,7 +253,7 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 	}
 	else if (checkPath(resource_path) == NotFound) //없으면 create
 	{
-		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK)) == -1)
+		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK, 0644)) == -1)
 			return this->makeErrorResponse(dial, location, 500);
 	}
 	else
