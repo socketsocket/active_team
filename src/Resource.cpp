@@ -43,9 +43,15 @@ void
 	if (write_bytes == -1)
 		throw SystemCallError("write");
 	else if ((size_t)write_bytes == target.size())
+	{
 		target.clear();
+		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
+	}
 	else
+	{
 		target.erase(0, write_bytes);
+		EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
+	}
 }
 
 void

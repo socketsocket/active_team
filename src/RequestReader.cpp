@@ -176,12 +176,13 @@ void	RequestReader::makeChunkedBody()
 void	RequestReader::makeLengthBody()
 {
 	Request	&req = dial->req;
-	size_t	len;
+	long	read_size = (this->buffer.size() < (unsigned long)content_length ? this->buffer.size() : content_length);
 
-	len = atoi(req.getHeaders()["content-length"].c_str());
-	req.addBody(this->buffer.substr(0, len));
-	this->buffer.erase(0, len);
-	stat = REQUEST_COMPLETE;
+	req.addBody(this->buffer.substr(0, read_size));
+	this->buffer.erase(0, read_size);
+	content_length -= read_size;
+	if (content_length == 0)
+		stat = REQUEST_COMPLETE;
 }
 
 Dialogue*	RequestReader::parseRequest(void)
