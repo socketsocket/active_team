@@ -115,6 +115,7 @@ void	RequestReader::makeReqHeader()
 	// if Header end
 	if (pos == 0)
 	{
+		this->buffer.erase(0, 2);
 		typedef std::map<std::string, std::string>::iterator	iterator;
 
 		iterator	iter;

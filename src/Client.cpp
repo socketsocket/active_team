@@ -94,7 +94,7 @@ std::string*
 
 	std::string* cgi_path = location.getCGIExecPath(cgi_ext);
 	if (cgi_path == 0)
-		throw BadRequest();
+		return 0;
 
 	return (cgi_path);
 }
@@ -104,6 +104,7 @@ void
 {
 	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("host");
 	Server		*server = pm->getServer(iter->second);
+	//요청 uri 가 없을 때 어떻게 ?
 	Location	&location = *(server->getLocation(dial->req.getUri()));
 
 	//maybe 400

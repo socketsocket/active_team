@@ -193,12 +193,6 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 void Server::makeGETResponse(Dialogue *dial, Location &location, std::string path)
 {
 	Response &response = dial->res;
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
 
 	if (checkPath(path) == Directory)
 	{
@@ -218,10 +212,11 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 		}
 		if (found == false && location.isAutoIndex() == true)
 		{
+			response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 			response.addHeader("Content-Type", this->contentTypeHeader(".html"));
 			response.addBody(this->makeAutoIndexPage(path, path, location));
-			// response.addHeader("Content-Length", std::to_string(response.getBody().length()));
-			//200 ok
+			dial->status = Dialogue::READY_TO_RESPONSE;
+			return ;
 		}
 		if (checkPath(path) == NotFound || checkPath(path) == Directory)
 			return this->makeErrorResponse(dial, location, 404);
@@ -233,6 +228,12 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 		return this->makeErrorResponse(dial, location, 404);
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
 
 	Resource *resource = new Resource(fd, dial);
 	EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
@@ -243,13 +244,6 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 {
 	//POST 는 대부분 cgi 처리를 원함. cgi 가 아닌 서버에서의 POST 의 경우 파일 생성
 	Response &response = dial->res;
-
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
 
 	int fd;
 	if (checkPath(resource_path) == File) //있으면 append
@@ -266,6 +260,12 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 		return this->makeErrorResponse(dial, location, 403);
 
 	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
 
 	Resource *resource = new Resource(fd, dial);
 	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
@@ -277,13 +277,6 @@ void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string 
 	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
 	Response &response = dial->res;
 
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
-
 	if (checkPath(resource_path) == Directory)
 	{
 		if (this->deleteDirectory(resource_path) == 1)
@@ -293,6 +286,12 @@ void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string 
 		unlink(resource_path.c_str());
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
 	response.addBody(this->makeHTMLPage("File deleted."));
 
 	dial->status = Dialogue::READY_TO_RESPONSE;
@@ -515,7 +514,14 @@ std::string
 Location*
 	Server::getLocation(std::string uri)
 {
-	std::map<std::string, Location*>::iterator iter = locations.find(uri);
+	size_t pos = uri.length() - 1;
+	std::string uri_loc = uri;
+
+	while (uri[pos] != '/')
+			pos--;
+	uri_loc = uri.substr(0, pos + 1);
+
+	std::map<std::string, Location*>::iterator iter = locations.find(uri_loc);
 	if (iter == locations.end())
 		return (0);
 	return (iter->second);
