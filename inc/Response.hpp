@@ -23,6 +23,8 @@ public:
 	void			addBody(std::string);
 	void			setStatusCode(unsigned int code);
 	void			setCGI(CGI *cgi);
+	void			setResource(Resource *resource);
+
 
 	std::string		getStartLine();
 	std::string		&getBody();
@@ -30,6 +32,8 @@ public:
 	std::map<std::string, std::string> &getHeaders();
 	unsigned int	getStatusCode();
 	CGI*			getCGI();
+	Resource*		getResource();
+
 
 private:
 	Response(const Response &other);
@@ -44,6 +48,7 @@ private:
 	std::string							body;
 
 	CGI	*cgi;
+	Resource *resource;
 };
 
 #endif

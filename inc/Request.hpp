@@ -9,7 +9,7 @@
 class Request
 {
 public:
-	enum Method { GET, POST, DELETE };
+	enum Method { NON, GET, POST, DELETE };
 
 	Request();
 	~Request();

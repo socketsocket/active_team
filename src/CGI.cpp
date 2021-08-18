@@ -66,6 +66,8 @@ static std::string
 		return ("POST");
 	case Request::DELETE:
 		return ("DELETE");
+	case Request::NON:
+		assert(false);
 	}
 }
 
