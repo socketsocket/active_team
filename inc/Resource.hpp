@@ -11,8 +11,6 @@
 class	Resource : public FDManager
 {
 public:
-	enum Type { READ, OVERWRITE, APPEND };
-
 	Resource(int fd, Dialogue *dialogue);
 	virtual ~Resource();
 

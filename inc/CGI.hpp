@@ -4,14 +4,16 @@
 # include <vector>
 # include <string>
 
-# include "Dialogue.hpp"
+# include "FDManager.hpp"
+
+struct	Dialogue;
 
 class	CGI : public FDManager
 {
 public:
 	struct Query { std::string name; std::string value; };
 
-	CGI(const std::string &script_path, Dialogue *dialogue, int server_port);
+	CGI(std::string &script_path, Dialogue *dialogue, int server_port);
 	virtual ~CGI();
 
 	void	setPrintFD(int fd);
@@ -21,6 +23,8 @@ public:
 	virtual void	writeEvent(long write_size);
 	virtual void	timerEvent();
 
+	void	start();
+
 private:
 	CGI();
 	CGI(const CGI &other);
@@ -29,7 +33,9 @@ private:
 
 	int			script_stdin;
 	pid_t		script_pid;
+	std::string	&script_path;
 	Dialogue	*dialogue;
+	int			server_port;
 };
 
 #endif

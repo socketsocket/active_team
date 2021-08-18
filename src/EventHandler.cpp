@@ -234,6 +234,7 @@ EventHandler::~EventHandler()
 			++itr)
 		delete itr->second;
 	port_managers.clear();
+	close(kq);
 }
 
 void

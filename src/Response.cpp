@@ -1,11 +1,16 @@
 #include "Response.hpp"
 
 Response::Response()
-	: status_code(0)
+	: status_code(0),
+	  cgi(NULL)
 {}
 
 Response::~Response()
-{}
+{
+	// DO NOT DELETE CGI
+	// DELETE CGI AFTER USED BY RESPONSE_WRITER
+	//delete cgi;
+}
 
 void
 	Response::makeStartLine(std::string http_version, unsigned int status_code, std::string msg)
@@ -13,12 +18,6 @@ void
 	this->http_version = http_version;
 	this->status_code = status_code;
 	this->message = msg;
-
-	this->start_line += http_version;
-	this->start_line += " ";
-	this->start_line += std::to_string(status_code);
-	this->start_line += " ";
-	this->start_line += message;
 }
 
 void
@@ -36,6 +35,13 @@ void
 std::string
 	Response::getStartLine()
 {
+	std::string	start_line;
+
+	start_line = http_version;
+	start_line += " ";
+	start_line += std::to_string(status_code);
+	start_line += " ";
+	start_line += message;
 	return (start_line);
 }
 
@@ -57,8 +63,19 @@ unsigned int
 	return (status_code);
 }
 
+CGI	*Response::getCGI()
+{
+	return (cgi);
+}
+
 void
 	Response::setStatusCode(unsigned int code)
 {
 	this->status_code = code;
+}
+
+void
+	Response::setCGI(CGI *cgi)
+{
+	this->cgi = cgi;
 }
