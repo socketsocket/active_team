@@ -6,7 +6,7 @@
 #    By: seyu <seyu@student.42seoul.kr>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/10/10 23:07:12 by seheon            #+#    #+#              #
-#    Updated: 2021/08/16 13:20:16 by seyu             ###   ########.fr        #
+#    Updated: 2021/08/18 11:00:46 by seyu             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -107,7 +107,6 @@ $(DIR_OBJ):
 	@$(MKDIR) $@
 
 $(DIR_OBJ)/%.o: %.cpp
-	@$(eval PROGRESS = $(shell expr $(PROGRESS) + 1))
 	@$(PRINTF) "$(LINE_CLEAR)""$(WHITE)Compiling Progress$(NOCOLOR): [%3d%%] [ " $$(expr $(PROGRESS) \* 100 \/ $$($(ECHO) $(SRCS) | wc -w))
 	@itr=1; while [[ $${itr} -le $(PROGRESS) ]] ; do \
 		$(PRINTF) '\u2588' ; \
@@ -118,10 +117,16 @@ $(DIR_OBJ)/%.o: %.cpp
 		((itr = itr + 1)) ; \
 	done
 	@$(PRINTF) ' ] : $(DARKGRAY)$<$(NOCOLOR) '
+	@$(eval PROGRESS = $(shell expr $(PROGRESS) + 1))
 	@$(CC) $(CFLAGS) -I$(DIR_INC) -c $< -o $@
 
 $(NAME):	$(DIR_OBJ) $(OBJS)
-	@$(PRINTF) "$(LINE_CLEAR)"
+	@$(PRINTF) "$(LINE_CLEAR)""$(WHITE)Compiling Progress$(NOCOLOR): [100%%] [ "
+	@itr=1; while [[ $${itr} -le $$($(ECHO) $(SRCS) | wc -w) ]] ; do \
+		$(PRINTF) '\u2588' ; \
+		((itr = itr + 1)) ; \
+	done
+	@$(ECHO) " ]"
 	@$(ECHO) "$(WHITE)Compiled$(NOCOLOR) all source files"
 	@$(CC) $(CFLAGS) -I$(DIR_INC) $(OBJS) $(CLIBFMW) -o $(NAME)
 	@$(ECHO)

@@ -123,7 +123,25 @@ class	BadRequest : public std::exception
 public:
 	const char* what() const throw()
 	{
-		return ("400 Bad Request");
+		return ("exception: 400 Bad Request");
+	}
+};
+
+class	Forbidden : public std::exception
+{
+public:
+	const char* what() const throw()
+	{
+		return ("exception: 403 Forbidden");
+	}
+};
+
+class	NotFound : public std::exception
+{
+public:
+	const char* what() const throw()
+	{
+		return ("exception: 404 Not Found");
 	}
 };
 
