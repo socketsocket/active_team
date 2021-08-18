@@ -132,12 +132,23 @@ void
 	if (dial->status == Dialogue::READY_TO_RESPONSE)
 		return EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 
-	// response
+	if (dial->res.getResource() != NULL)
+		return ;
+
+	std::string resource_path = dial->req.getUri();
+	resource_path.replace(0, location->getPath().length(), location->getRoot());
 	try
 	{
 		std::string*	cgi_path;
 		if ((cgi_path = this->isCGIRequest(dial->req, *location)) != 0)
 		{
+			if (dial->req.getMethod() != Request::POST)
+			{
+				struct stat buf;
+
+				if (stat(resource_path.c_str(), &buf) == -1)
+					return server->makeErrorResponse(dial, location, 404);
+			}
 			//add headers
 			Response &res = dial->res;
 			res.addHeader("Date", server->dateHeader());
@@ -164,8 +175,6 @@ void
 		}
 		else
 		{
-			std::string resource_path = dial->req.getUri();
-			resource_path.replace(0, location->getPath().length(), location->getRoot());
 			// root directory check in parsing
 			if (dial->req.getMethod() == Request::GET)
 				server->makeGETResponse(dial, location, resource_path);

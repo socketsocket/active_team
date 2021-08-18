@@ -70,8 +70,11 @@ void	RequestReader::makeStartLine()
 		req.setMethod(Request::POST);
 	else if (tmp == "delete")
 		req.setMethod(Request::DELETE);
-	else
+	else if (tmp == "put" || tmp == "head" || tmp == "connect" || tmp == "option" 
+			|| tmp == "trace" || tmp == "patch")
 		throw MethodNotAllowed();
+	else
+		throw BadRequest();
 
 	tmp = start_line.substr(pos + 1, start_line.rfind(' ') - (pos + 1));
 	req.setUri(tmp);

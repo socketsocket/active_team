@@ -121,8 +121,8 @@ void Server::makeErrorResponse(Dialogue *dial, Location *location, size_t error_
 		response.addBody(this->generateErrorPage(error_code));
 	else
 	{
-		Resource	resource(fd, dial);
-		EventHandlerInstance::getInstance().enableReadEvent(resource.getFD());
+		Resource	*resource = new Resource(fd, dial);
+		EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
 		return ;
 	}
 
@@ -276,6 +276,8 @@ void Server::makeDELETEResponse(Dialogue *dial, Location *location, std::string 
 	}
 	else if (checkPath(resource_path) == File)
 		unlink(resource_path.c_str());
+	else
+		return this->makeErrorResponse(dial, location, 404);
 
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 	makeGeneralHeaders(dial);
@@ -516,14 +518,24 @@ Location*
 	size_t pos = uri.length() - 1;
 	std::string uri_loc = uri;
 
-	while (uri[pos] != '/')
-			pos--;
-	uri_loc = uri.substr(0, pos + 1);
+	if (uri[pos] != '/')
+		uri_loc += '/';
 
 	std::map<std::string, Location*>::iterator iter = locations.find(uri_loc);
-	if (iter == locations.end())
-		return (0);
-	return (iter->second);
+	if (iter != locations.end())
+		return (iter->second);
+
+	//파일 형식으로 들어온 경우
+	uri_loc.erase(pos);
+	while (uri[pos] != '/')
+		pos--;
+	uri_loc = uri.substr(0, pos + 1);
+
+	iter = locations.find(uri_loc);
+	if (iter != locations.end())
+		return (iter->second);
+	
+	return (0);
 }
 
 unsigned int
