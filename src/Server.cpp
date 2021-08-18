@@ -106,7 +106,7 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 	int fd = 0;
 	// struct stat buf;
 
-	if (location.getErrorPages().count(error_code))
+	if (&location != NULL && location.getErrorPages().count(error_code))
 		fd = open(location.getErrorPages()[error_code].c_str(), O_RDONLY);
 	else if (this->getErrorPages().count(error_code))
 		fd = open(this->getErrorPages()[error_code].c_str(), O_RDONLY);
