@@ -105,6 +105,9 @@ void	RequestReader::makeReqHeader()
 		pos = this->buffer.find(":");
 		key = header_line.substr(0, pos);
 		value = header_line.substr(pos + 2);
+		size_t	val_pos;
+		if ((val_pos = value.find(":")) != std::string::npos)
+			value = value.substr(0, val_pos);
 		string_tolower(&key[0], &key[key.size()]);
 		req.setHeaders(key, value);
 
