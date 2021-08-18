@@ -154,4 +154,13 @@ public:
 	}
 };
 
+class	Conflict : public std::exception
+{
+public:
+	const char* what() const throw()
+	{
+		return ("exception: 409 Conflict");
+	}
+};
+
 #endif

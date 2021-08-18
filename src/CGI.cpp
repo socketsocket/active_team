@@ -74,7 +74,12 @@ CGI::CGI(std::string &script_path, Dialogue *dialogue, int server_port)
 	  script_path(script_path),
 	  dialogue(dialogue),
 	  server_port(server_port)
-{}
+{
+	struct stat	file_status;
+
+	if (stat(script_path.c_str(), &file_status) == -1)
+		throw Conflict();
+}
 
 CGI::~CGI()
 {

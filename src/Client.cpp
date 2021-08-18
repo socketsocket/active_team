@@ -112,7 +112,7 @@ void
 	//maybe 400
 	if (dial->res.getStatusCode() != 0)
 		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
-	
+
 	else if (location == NULL)
 		server->makeErrorResponse(dial, location, 404);
 
@@ -159,6 +159,10 @@ void
 			catch (NotFound &e)
 			{
 				res.makeStartLine("HTTP/1.1", 404, server->statusMessage(404));
+			}
+			catch (Conflict &e)
+			{
+				res.makeStartLine("HTTP/1.1", 409, server->statusMessage(409));
 			}
 			EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 		}
