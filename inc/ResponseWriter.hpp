@@ -8,6 +8,7 @@
 struct	Dialogue;
 
 # include "Response.hpp"
+# include "CGI.hpp"
 
 class	ResponseWriter
 {
@@ -27,6 +28,7 @@ private:
 
 	int			client_fd;
 	bool		last_communication;
+	CGI			*cgi;
 	std::string	buffer;
 };
 

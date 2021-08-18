@@ -51,6 +51,8 @@ void
 	if (writer.emptyBuffer() == true)
 	{
 		writer.pushResponse(dialogues.front()->res);
+		if (dialogues.front()->res.getCGI() == NULL)
+			delete dialogues.front();
 		dialogues.pop();
 	}
 	if (writer.writeResponse(write_size))
@@ -140,8 +142,24 @@ void
 			res.addHeader("Date", server->dateHeader());
 			res.addHeader("Server", "hsonseyu Server");
 			res.addHeader("Connection", "keep-alive");
-
-			CGI cgi(*(cgi_path), dial, pm->getPort());
+			try
+			{
+				res.setCGI(new CGI(*(cgi_path), dial, pm->getPort()));
+				res.makeStartLine("HTTP/1.1", 200, server->statusMessage(200));
+			}
+			catch (BadRequest &e)
+			{
+				res.makeStartLine("HTTP/1.1", 400, server->statusMessage(400));
+			}
+			catch (Forbidden &e)
+			{
+				res.makeStartLine("HTTP/1.1", 403, server->statusMessage(403));
+			}
+			catch (NotFound &e)
+			{
+				res.makeStartLine("HTTP/1.1", 404, server->statusMessage(404));
+			}
+			EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 		}
 		else
 		{
