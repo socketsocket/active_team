@@ -10,8 +10,7 @@ ResponseWriter::ResponseWriter(int client_fd)
 {}
 
 ResponseWriter::~ResponseWriter()
-{
-}
+{}
 
 void	ResponseWriter::pushResponse(Response &res)
 {
@@ -20,7 +19,8 @@ void	ResponseWriter::pushResponse(Response &res)
 	buffer += res.getStartLine();
 	buffer += "\r\n";
 
-	res.addHeader("Content-Length", std::to_string(res.getBody().length()));
+	if (cgi == NULL)
+		res.addHeader("Content-Length", std::to_string(res.getBody().length()));
 	for (std::map<std::string, std::string>::iterator iter = res.getHeaders().begin(); iter != res.getHeaders().end(); iter++)
 	{
 		buffer += iter->first;
@@ -28,9 +28,11 @@ void	ResponseWriter::pushResponse(Response &res)
 		buffer += iter->second;
 		buffer += "\r\n";
 	}
-	buffer += "\r\n";
-
-	buffer += res.getBody();
+	if ((cgi = res.getCGI()) == NULL)
+	{
+		buffer += "\r\n";
+		buffer += res.getBody();
+	}
 }
 
 bool
@@ -51,6 +53,11 @@ bool
 	else if ((size_t)write_bytes == buffer.size())
 	{
 		buffer.clear();
+		if (cgi)
+		{
+			cgi->start();
+			delete cgi;
+		}
 		return (last_communication);
 	}
 	else

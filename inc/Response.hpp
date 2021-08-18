@@ -6,6 +6,8 @@
 # include <queue>
 # include <deque>
 
+# include "CGI.hpp"
+
 class	Response
 {
 public:
@@ -20,12 +22,14 @@ public:
 	void			addHeader(std::string, std::string);
 	void			addBody(std::string);
 	void			setStatusCode(unsigned int code);
+	void			setCGI(CGI *cgi);
 
 	std::string		getStartLine();
 	std::string		&getBody();
 	// void			setResoureFD(int fd);
 	std::map<std::string, std::string> &getHeaders();
 	unsigned int	getStatusCode();
+	CGI*			getCGI();
 
 private:
 	Response(const Response &other);
@@ -36,9 +40,10 @@ private:
 	unsigned int						status_code;
 	std::string							message;
 
-	std::string							start_line;
 	std::map<std::string, std::string>	header;
 	std::string							body;
+
+	CGI	*cgi;
 };
 
 #endif
