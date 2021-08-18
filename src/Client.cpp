@@ -105,17 +105,17 @@ void
 	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("host");
 	Server		*server = pm->getServer(iter->second);
 	//요청 uri 가 없을 때 어떻게 ?
-	Location	&location = *(server->getLocation(dial->req.getUri()));
+	Location	*location = server->getLocation(dial->req.getUri());
 
 	//maybe 400
 	if (dial->res.getStatusCode() != 0)
 		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
 	
-	else if (&location == NULL)
+	else if (location == NULL)
 		server->makeErrorResponse(dial, location, 404);
 
 	// Allowed Method (405 error)
-	else if (std::find(location.getMethodAllowed().begin(), location.getMethodAllowed().end(), dial->req.getMethod()) == location.getMethodAllowed().end())
+	else if (std::find(location->getMethodAllowed().begin(), location->getMethodAllowed().end(), dial->req.getMethod()) == location->getMethodAllowed().end())
 		server->makeErrorResponse(dial, location, 405);
 
 	// Client Body Limit
@@ -123,7 +123,7 @@ void
 		server->makeErrorResponse(dial, location, 413);
 
 	// Server Block return
-	else if (server->getReturnCode() != 0 || location.getReturnCode() != 0)
+	else if (server->getReturnCode() != 0 || location->getReturnCode() != 0)
 		server->makeReturnResponse(dial, location, server->getReturnCode());
 
 	if (dial->status == Dialogue::READY_TO_RESPONSE)
@@ -133,7 +133,7 @@ void
 	try
 	{
 		std::string*	cgi_path;
-		if ((cgi_path = this->isCGIRequest(dial->req, location)) != 0)
+		if ((cgi_path = this->isCGIRequest(dial->req, *location)) != 0)
 		{
 			//add headers
 			Response &res = dial->res;
@@ -146,7 +146,7 @@ void
 		else
 		{
 			std::string resource_path = dial->req.getUri();
-			resource_path.replace(0, location.getPath().length(), location.getRoot());
+			resource_path.replace(0, location->getPath().length(), location->getRoot());
 			// root directory check in parsing
 			if (dial->req.getMethod() == Request::GET)
 				server->makeGETResponse(dial, location, resource_path);

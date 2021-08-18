@@ -40,12 +40,12 @@ public:
 	std::string	makeHTMLPage(std::string body);
 	std::string	generateErrorPage(size_t error_code);
 	
-	void		makeErrorResponse(Dialogue *, Location &location, size_t);
-	void		makeReturnResponse(Dialogue *, Location &location, size_t);
-	std::string	makeAutoIndexPage(std::string path, std::string uri, Location &location);
-	void		makeGETResponse(Dialogue *, Location &, std::string);
-	void		makePOSTResponse(Dialogue *, Location &, std::string);
-	void		makeDELETEResponse(Dialogue *, Location &, std::string);
+	void		makeErrorResponse(Dialogue *, Location *location, size_t);
+	void		makeReturnResponse(Dialogue *, Location *location, size_t);
+	std::string	makeAutoIndexPage(std::string path, std::string uri, Location *location);
+	void		makeGETResponse(Dialogue *, Location *, std::string);
+	void		makePOSTResponse(Dialogue *, Location *, std::string);
+	void		makeDELETEResponse(Dialogue *, Location *, std::string);
 	// Response	makeCGIResponse();
 	void		makeGeneralHeaders(Dialogue *dial);
 

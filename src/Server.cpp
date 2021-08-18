@@ -94,7 +94,7 @@ std::string
 	return (html);
 }
 
-void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_code)
+void Server::makeErrorResponse(Dialogue *dial, Location *location, size_t error_code)
 {
 	Response &response = dial->res;
 	response.makeStartLine("HTTP/1.1", error_code, this->statusMessage(error_code));
@@ -106,8 +106,8 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 	int fd = 0;
 	// struct stat buf;
 
-	if (&location != NULL && location.getErrorPages().count(error_code))
-		fd = open(location.getErrorPages()[error_code].c_str(), O_RDONLY);
+	if (location != NULL && location->getErrorPages().count(error_code))
+		fd = open(location->getErrorPages()[error_code].c_str(), O_RDONLY);
 	else if (this->getErrorPages().count(error_code))
 		fd = open(this->getErrorPages()[error_code].c_str(), O_RDONLY);
 	else
@@ -129,13 +129,13 @@ void Server::makeErrorResponse(Dialogue *dial, Location &location, size_t error_
 	dial->status = Dialogue::READY_TO_RESPONSE;
 }
 
-void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t return_code)
+void	Server::makeReturnResponse(Dialogue *dial, Location *location, size_t return_code)
 {
 	Response &response = dial->res;
 	response.makeStartLine("HTTP/1.1", return_code, this->statusMessage(return_code));
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
-	response.addHeader(std::string("Location"), location.getReturnInfo().second);
+	response.addHeader(std::string("Location"), location->getReturnInfo().second);
 	if (dial->req.keepConnection())
 		response.addHeader(std::string("Connection"), "keep-alive");
 	else
@@ -145,7 +145,7 @@ void	Server::makeReturnResponse(Dialogue *dial, Location &location, size_t retur
 }
 
 
-std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Location &location)
+std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Location *location)
 {
 	(void)location;
 	DIR *dir;
@@ -191,7 +191,7 @@ std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Locatio
 }
 
 
-void Server::makeGETResponse(Dialogue *dial, Location &location, std::string path)
+void Server::makeGETResponse(Dialogue *dial, Location *location, std::string path)
 {
 	Response &response = dial->res;
 
@@ -202,7 +202,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 			path += '/';
 		struct stat buf;
 		bool found = false;
-		for (std::vector<std::string>::iterator iter = location.getIndex().begin(); iter != location.getIndex().end(); iter++)
+		for (std::vector<std::string>::iterator iter = location->getIndex().begin(); iter != location->getIndex().end(); iter++)
 		{
 			if (stat((path + *iter).c_str(), &buf) == 0)
 			{
@@ -211,7 +211,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 				break ;
 			}
 		}
-		if (found == false && location.isAutoIndex() == true)
+		if (found == false && location->isAutoIndex() == true)
 		{
 			response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 			makeGeneralHeaders(dial);
@@ -237,7 +237,7 @@ void Server::makeGETResponse(Dialogue *dial, Location &location, std::string pat
 }
 
 
-void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string resource_path)
+void Server::makePOSTResponse(Dialogue *dial, Location *location, std::string resource_path)
 {
 	//POST 는 대부분 cgi 처리를 원함. cgi 가 아닌 서버에서의 POST 의 경우 파일 생성
 	Response &response = dial->res;
@@ -263,7 +263,7 @@ void Server::makePOSTResponse(Dialogue *dial, Location &location, std::string re
 	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
 }
 
-void Server::makeDELETEResponse(Dialogue *dial, Location &location, std::string resource_path)
+void Server::makeDELETEResponse(Dialogue *dial, Location *location, std::string resource_path)
 {
 	(void)location;
 	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
