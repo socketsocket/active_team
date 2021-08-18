@@ -1,7 +1,7 @@
 #include "Request.hpp"
 #include "Exception.hpp"
 
-Request::Request()
+Request::Request() : method(GET), uri("/"), http_version("http/1.1")
 {
 }
 

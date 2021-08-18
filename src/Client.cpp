@@ -121,7 +121,8 @@ void
 		server->makeErrorResponse(dial, location, 405);
 
 	// Client Body Limit
-	else if (dial->req.getBody().length() > server->getBodyLimit())
+	else if (dial->req.getBody().length() > server->getBodyLimit()
+			|| dial->req.getBody().length() > location->getBodyLimit())
 		server->makeErrorResponse(dial, location, 413);
 
 	// Server Block return

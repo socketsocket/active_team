@@ -76,6 +76,8 @@ static Location
 			else
 				location->setReturnInfo(code, front_pop(config_queue));
 		}
+		else if (word == "client_body_limit")
+			location->setBodyLimit(std::atoi(front_pop(config_queue).c_str()));
 		else
 			throw BadDirective(word);
 

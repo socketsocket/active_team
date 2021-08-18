@@ -54,6 +54,13 @@ void
 }
 
 void
+	Location::setBodyLimit(int limit)
+{
+	this->body_limit = limit;
+}
+
+
+void
 	Location::addIndex(std::string path)
 {
 	index.push_back(path);
@@ -124,7 +131,14 @@ std::map<int, std::string>&	Location::getErrorPages()
 {
 	return (error_pages);
 }
+
 std::set<Request::Method>&	Location::getMethodAllowed()
 {
 	return (allowed_methods);
+}
+
+unsigned int
+	Location::getBodyLimit()
+{
+	return (body_limit);
 }

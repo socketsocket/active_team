@@ -22,6 +22,8 @@ public:
 	void	setReturnInfo(int code, std::string uri);
 	void	setErrorPage(int error_code, std::string page_path);
 	void	setCGI(std::string extension, std::string exe_path);
+	void	setBodyLimit(int limit);
+
 
 	void	addIndex(std::string path); // Success : 0, Fail : 1
 	// int		addCGI(std::string extension, std::string exe_path);
@@ -39,6 +41,8 @@ public:
 	std::pair<int, std::string>	&getReturnInfo();
 	std::map<int, std::string>	&getErrorPages();
 	std::set<Request::Method>	&getMethodAllowed();
+	unsigned int				getBodyLimit();
+
 
 private:
 	Location(const Location &other);
@@ -53,6 +57,8 @@ private:
 	std::set<Request::Method>			allowed_methods;
 	std::pair<int, std::string>			return_info;
 	bool								auto_index;
+	int									body_limit;
+
 };
 
 #endif
