@@ -127,4 +127,13 @@ public:
 	}
 };
 
+class	MethodNotAllowed : public std::exception
+{
+public:
+	const char* what() const throw()
+	{
+		return ("405 Method Not Allowed");
+	}
+};
+
 #endif

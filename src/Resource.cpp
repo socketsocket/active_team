@@ -38,6 +38,7 @@ void
 	Resource::writeEvent(long write_size)
 {
 	std::string	&target = dialogue->req.getBody();
+	write_size = (target.length() < (size_t)write_size) ? target.length() : write_size;
 	ssize_t		write_bytes = write(getFD(), &target[0], write_size);
 
 	if (write_bytes == -1)

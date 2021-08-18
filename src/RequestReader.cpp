@@ -71,7 +71,7 @@ void	RequestReader::makeStartLine()
 	else if (tmp == "delete")
 		req.setMethod(Request::DELETE);
 	else
-		throw BadRequest();
+		throw MethodNotAllowed();
 
 	tmp = start_line.substr(pos + 1, start_line.rfind(' ') - (pos + 1));
 	req.setUri(tmp);
@@ -173,7 +173,10 @@ void	RequestReader::makeChunkedBody()
 		this->buffer.erase(0, content_line + 2);
 	}
 	if (len == 0)
+	{
+		this->buffer.erase(0, 5);
 		stat = REQUEST_COMPLETE;
+	}
 }
 
 void	RequestReader::makeLengthBody()
@@ -202,7 +205,7 @@ Dialogue*	RequestReader::parseRequest(void)
 		{
 			if (chunked)
 				this->makeChunkedBody();
-			else if (content_length > 0)
+			else if (content_length >= 0)
 				this->makeLengthBody();
 		}
 		if (stat == REQUEST_COMPLETE)
@@ -219,6 +222,14 @@ Dialogue*	RequestReader::parseRequest(void)
 	catch (BadRequest &e)
 	{
 		dial->res.setStatusCode(400);
+
+		Dialogue	*rtn = dial;
+		dial = NULL;
+		return (rtn);
+	}
+	catch (MethodNotAllowed &e)
+	{
+		dial->res.setStatusCode(405);
 
 		Dialogue	*rtn = dial;
 		dial = NULL;
