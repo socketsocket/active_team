@@ -111,7 +111,7 @@ void
 	if (dial->res.getStatusCode() != 0)
 		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
 	
-	else if (&location == nullptr)
+	else if (&location == null)
 		server->makeErrorResponse(dial, location, 404);
 
 	// Allowed Method (405 error)
