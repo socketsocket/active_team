@@ -14,15 +14,12 @@ public:
 	Request();
 	~Request();
 
-	// int				getStatus();
 	Method			getMethod();
 	std::string 	&getUri();
 	std::string 	getHttpVersion();
 	std::map<std::string, std::string>	&getHeaders();
 	std::string 	&getBody();
-	// int				getBodyType();
 
-	// void			setStatus(int status);
 	void			setMethod(Method method);
 	void			setUri(std::string uri);
 	void			setHttpVersion(std::string version);
@@ -30,21 +27,18 @@ public:
 	void			addBody(std::string body);
 	// void			setBodyType(int type);
 
-	bool			keepConnection();	// true -> keep-alive, false -> close
+	bool			keepConnection();
 
 private:
 	Request(const Request& req);
 
 	Request& operator= (const Request &req);
 
-	// int				status;
-	// int				body_type;	//처음에 NOBODY 로 초기화
-
 	Method			method;
 	std::string 	uri;
 	std::string 	http_version;
 	std::map<std::string, std::string>
-					headers;  // 헤더 중복 허용 안함, 중복시 400 Bad Request, Connection: close
+					headers;
 	std::string 	body;
 };
 

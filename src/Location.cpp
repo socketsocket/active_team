@@ -5,13 +5,18 @@ Location::Location()
 	: auto_index(false)
 {}
 
-Location::~Location()	{}
+Location::~Location()
+{}
 
 void
 	Location::setPath(std::string path)
 {
 	this->path = path;
 }
+
+//* ---------------------------------------- */
+/*             setter                        */
+/* ---------------------------------------- */
 
 void
 	Location::setRoot(std::string root_path)
@@ -83,21 +88,30 @@ void
 		throw BadDirectiveValue(method);
 }
 
+//* ---------------------------------------- */
+/*               getter                     */
+/* ---------------------------------------- */
 
-std::string					Location::getPath()
+std::string
+	Location::getPath()
 {
 	return (path);
 }
 
-std::string					Location::getRoot()
+std::string
+	Location::getRoot()
 {
 	return (root);
 }
-std::vector<std::string>&	Location::getIndex()
+
+std::vector<std::string>&
+	Location::getIndex()
 {
 	return (index);
 }
-std::string					*Location::getCGIExecPath(std::string extension)
+
+std::string
+	*Location::getCGIExecPath(std::string extension)
 {
 	std::map<std::string, std::string>::iterator iter = cgi_info.find(extension);
 
@@ -107,16 +121,17 @@ std::string					*Location::getCGIExecPath(std::string extension)
 		return (&iter->second);
 }
 
-std::map<std::string, std::string>&	Location::getCGIInfo()
+std::map<std::string, std::string>&
+	Location::getCGIInfo()
 {
 	return (cgi_info);
 }
 
-bool						Location::isAutoIndex()
+bool	Location::isAutoIndex()
 {
 	return (auto_index);
 }
-size_t						Location::getReturnCode()
+size_t	Location::getReturnCode()
 {
 	return (return_info.first);
 }
@@ -127,12 +142,14 @@ std::pair<int, std::string>&
 	return (return_info);
 }
 
-std::map<int, std::string>&	Location::getErrorPages()
+std::map<int, std::string>&
+	Location::getErrorPages()
 {
 	return (error_pages);
 }
 
-std::set<Request::Method>&	Location::getMethodAllowed()
+std::set<Request::Method>&
+	Location::getMethodAllowed()
 {
 	return (allowed_methods);
 }
