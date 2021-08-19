@@ -13,7 +13,7 @@ class	CGI : public FDManager
 public:
 	struct Query { std::string name; std::string value; };
 
-	CGI(std::string &script_path, Dialogue *dialogue, int server_port);
+	CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogue, int server_port);
 	virtual ~CGI();
 
 	void	setPrintFD(int fd);
@@ -34,6 +34,7 @@ private:
 	int			script_stdin;
 	pid_t		script_pid;
 	std::string	&script_path;
+	std::string	resource_path;
 	Dialogue	*dialogue;
 	int			server_port;
 };

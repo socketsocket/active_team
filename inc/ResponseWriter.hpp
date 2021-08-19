@@ -18,6 +18,7 @@ public:
 
 	void	pushResponse(Response &res);
 	bool	emptyBuffer();
+	bool	writeChunkedResponse(long write_size);
 	bool	writeResponse(long write_size);
 
 private:
@@ -29,6 +30,7 @@ private:
 	int			client_fd;
 	bool		last_communication;
 	CGI			*cgi;
+	Resource	*resource;
 	std::string	buffer;
 };
 

@@ -26,7 +26,6 @@ public:
 	void			setCGI(CGI *cgi);
 	void			setResource(Resource *resource);
 
-
 	std::string		getStartLine();
 	std::string		&getBody();
 	// void			setResoureFD(int fd);

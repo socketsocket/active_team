@@ -318,6 +318,16 @@ void
 }
 
 void
+	EventHandler::disableWriteEvent(int fd)
+{
+	struct kevent	temp;
+
+	EV_SET(&temp, fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
+		throw (SystemCallError("kevent"));
+}
+
+void
 	EventHandler::setTimerEvent(int fd)
 {
 	struct kevent	temp;

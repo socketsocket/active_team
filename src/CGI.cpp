@@ -11,7 +11,8 @@ static int
 {
 	int	fildes[2];
 
-	pipe(fildes);
+	if (pipe(fildes) == -1)
+		throw SystemCallError("pipe");
 	script_stdin = fildes[0];
 	return (fildes[1]);
 }
@@ -71,9 +72,10 @@ static std::string
 	}
 }
 
-CGI::CGI(std::string &script_path, Dialogue *dialogue, int server_port)
+CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogue, int server_port)
 	: FDManager(openPipe(script_stdin)),
 	  script_path(script_path),
+	  resource_path(resource_path),
 	  dialogue(dialogue),
 	  server_port(server_port)
 {
@@ -102,15 +104,19 @@ void
 	std::string	&write_buffer = dialogue->req.getBody();
 	ssize_t		write_byte;
 
+	write_size = std::min(write_buffer.length(), (size_t)write_size);
+
 	if ((write_byte = write(getFD(), &write_buffer[0], write_size)) == -1)
 		throw SystemCallError("write");
-	else if ((size_t)write_byte == write_buffer.size())
+	else if ((size_t)write_byte == write_buffer.length())
 		dialogue->req.getBody().clear();
 	else
 		dialogue->req.getBody().erase(0, write_byte);
 
-	if (dialogue->req.getBody().size() > 0)
+	if (dialogue->req.getBody().length() > 0)
 		EventHandlerInstance::getInstance().enableWriteEvent(getFD());
+	else
+		delete this;
 }
 
 void
@@ -163,14 +169,16 @@ void
 		dup2(dialogue->client_fd, 1);
 		// close(dialogue->client->getFD());
 
-		char* const	argv[3] = { const_cast<char *>(script_path.c_str()), getenv("SCRIPT_NAME"), NULL };
+		char* const	argv[3] = { const_cast<char *>(script_path.c_str()), const_cast<char *>(resource_path.c_str()), NULL };
 
 		if (execv(script_path.c_str(), argv) == -1)
 			throw SystemCallError("execv");
 	}
 	else
 	{
-		close(script_stdin);
-		EventHandlerInstance::getInstance().enableWriteEvent(getFD());
+		if (dialogue->req.getBody().length() == 0)
+			delete this;
+		else
+			EventHandlerInstance::getInstance().enableWriteEvent(getFD());
 	}
 }
