@@ -39,7 +39,7 @@ void
 		buffer += res.getBody();
 		delete resource;
 	}
-	else // if (resource->getStatus() == Resource::DONE)
+	else // if (resource->getStatus() != Resource::DONE)
 		is_chunked = true;
 }
 
