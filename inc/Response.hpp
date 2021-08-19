@@ -7,6 +7,7 @@
 # include <deque>
 
 # include "CGI.hpp"
+# include "Resource.hpp"
 
 class	Response
 {
@@ -24,7 +25,6 @@ public:
 	void			setStatusCode(unsigned int code);
 	void			setCGI(CGI *cgi);
 	void			setResource(Resource *resource);
-
 
 	std::string		getStartLine();
 	std::string		&getBody();
@@ -47,8 +47,8 @@ private:
 	std::map<std::string, std::string>	header;
 	std::string							body;
 
-	CGI	*cgi;
-	Resource *resource;
+	CGI			*cgi;
+	Resource	*resource;
 };
 
 #endif

@@ -32,6 +32,7 @@ public:
 
 	void	enableReadEvent(int fd);
 	void	enableWriteEvent(int fd);
+	void	disableWriteEvent(int fd);
 	void	setTimerEvent(int fd);
 
 private:

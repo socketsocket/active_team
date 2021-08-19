@@ -156,7 +156,7 @@ void
 			res.addHeader("Connection", "keep-alive");
 			try
 			{
-				res.setCGI(new CGI(*(cgi_path), dial, pm->getPort()));
+				res.setCGI(new CGI(*(cgi_path), resource_path, dial, pm->getPort()));
 				res.makeStartLine("HTTP/1.1", 200, server->statusMessage(200));
 			}
 			catch (BadRequest &e)

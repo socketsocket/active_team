@@ -2,14 +2,16 @@
 
 Response::Response()
 	: status_code(0),
-	  cgi(NULL)
+	  cgi(NULL),
+	  resource(NULL)
 {}
 
 Response::~Response()
 {
-	// DO NOT DELETE CGI
-	// DELETE CGI AFTER USED BY RESPONSE_WRITER
+	// DO NOT DELETE CGI; IT IS UP TO CGI_WRITE_EVENT
 	//delete cgi;
+	// DO NOT DELETE RESOURCE; IT IS UP TO RESPONSE_WRITER
+	//delete resource;
 }
 
 void
@@ -68,6 +70,12 @@ CGI	*Response::getCGI()
 	return (cgi);
 }
 
+Resource
+	*Response::getResource()
+{
+	return (resource);
+}
+
 void
 	Response::setStatusCode(unsigned int code)
 {
@@ -78,4 +86,10 @@ void
 	Response::setCGI(CGI *cgi)
 {
 	this->cgi = cgi;
+}
+
+void
+	Response::setResource(Resource *res)
+{
+	this->resource = res;
 }

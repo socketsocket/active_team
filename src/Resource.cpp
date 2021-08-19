@@ -5,11 +5,13 @@
 #include "EventHandlerInstance.hpp"
 
 /* static */
+const long	Resource::MAX_OFFSET = 100000;
 
 /* public */
 Resource::Resource(int fd, Dialogue *dialogue)
 	: FDManager(fd),
-	  dialogue(dialogue)
+	  dialogue(dialogue),
+	  status(WAITING)
 {}
 
 Resource::~Resource()
@@ -18,20 +20,41 @@ Resource::~Resource()
 void
 	Resource::readEvent(long read_size)
 {
-	std::string				&buffer = dialogue->res.getBody();
-	std::string::size_type	buffer_size = buffer.size();
-	ssize_t					read_bytes;
+	read_size = std::min(MAX_OFFSET, read_size);
 
-	buffer.resize(buffer_size + read_size);
-	read_bytes= read(getFD(), &buffer[buffer_size], read_size);
+	std::string	&body = dialogue->res.getBody();
+	std::string	buffer;
+	ssize_t		read_bytes;
+
+	buffer.resize(read_size);
+	read_bytes = read(getFD(), &buffer[0], read_size);
 
 	if (read_bytes == -1)
 		throw SystemCallError("read");
-	else if (read_bytes == read_size)
+	if (status == WAITING)
 	{
-		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
-		delete this;
+		if (read_bytes == read_size)
+		{
+			body = buffer;
+			status = DONE;
+		}
+
 	}
+	else if (status == READING)
+	{
+		std::stringstream	ss;
+		std::string			length_hex;
+
+		ss << std::hex << buffer.length();
+		ss >> length_hex;
+		body += length_hex;
+		body += "\r\n";
+		body += buffer;
+		body += "\r\n";
+		if (read_bytes == read_size)
+			status = DONE;
+	}
+	EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
 }
 
 void
@@ -59,6 +82,12 @@ void
 	Resource::timerEvent()
 {
 	throw UnexceptedEventOccured("Resource timer event");
+}
+
+Resource::Status
+	Resource::getStatus()
+{
+	return (status);
 }
 
 /* private */
