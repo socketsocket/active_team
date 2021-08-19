@@ -23,10 +23,10 @@ public:
 	void		readRequest(long read_size);
 	Dialogue*	parseRequest();
 
-	void	makeStartLine();
-	void 	makeReqHeader();
-	void	makeChunkedBody();
-	void	makeLengthBody();
+	void		makeStartLine();
+	void 		makeReqHeader();
+	void		makeChunkedBody();
+	void		makeLengthBody();
 
 	std::string	getRawRequest();
 

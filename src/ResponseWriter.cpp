@@ -13,7 +13,8 @@ ResponseWriter::ResponseWriter(int client_fd)
 ResponseWriter::~ResponseWriter()
 {}
 
-void	ResponseWriter::pushResponse(Response &res)
+void
+	ResponseWriter::pushResponse(Response &res)
 {
 	bool	is_chunked = false;
 

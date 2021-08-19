@@ -109,25 +109,30 @@ void
 	//요청 uri 가 없을 때 어떻게 ?
 	Location	*location = server->getLocation(dial->req.getUri());
 
-	//maybe 400
+	//maybe 400: Bad Request
 	if (dial->res.getStatusCode() != 0)
 		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
 
 	else if (location == NULL)
 		server->makeErrorResponse(dial, location, 404);
 
-	// Allowed Method (405 error)
+	// Allowed Method - 405
 	else if (std::find(location->getMethodAllowed().begin(), location->getMethodAllowed().end(), dial->req.getMethod()) == location->getMethodAllowed().end())
 		server->makeErrorResponse(dial, location, 405);
 
-	// Client Body Limit
+	// Client Body Limit - 413
 	else if (dial->req.getBody().length() > server->getBodyLimit()
 			|| dial->req.getBody().length() > location->getBodyLimit())
 		server->makeErrorResponse(dial, location, 413);
 
-	// Server Block return
+	// Return - 3xx
 	else if (server->getReturnCode() != 0 || location->getReturnCode() != 0)
-		server->makeReturnResponse(dial, location, server->getReturnCode());
+	{
+		if (server->getReturnCode() != 0)
+			server->makeReturnResponse(dial, location, server->getReturnCode());
+		else
+			server->makeReturnResponse(dial, location, location->getReturnCode());
+	}
 
 	if (dial->status == Dialogue::READY_TO_RESPONSE)
 		return EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
@@ -179,14 +184,12 @@ void
 		}
 		else
 		{
-			// root directory check in parsing
 			if (dial->req.getMethod() == Request::GET)
 				server->makeGETResponse(dial, location, resource_path);
 			else if (dial->req.getMethod() == Request::POST)
 				server->makePOSTResponse(dial, location, resource_path);
 			else if (dial->req.getMethod() == Request::DELETE)
 				server->makeDELETEResponse(dial, location, resource_path);
-			// dial->req.setStatus(NEED_RESOURCE);
 
 			if (dial->status == Dialogue::READY_TO_RESPONSE)
 				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
