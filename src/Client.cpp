@@ -107,7 +107,7 @@ void
 	std::map<std::string, std::string>::iterator iter = dial->req.getHeaders().find("host");
 	Server		*server = pm->getServer(iter->second);
 	//요청 uri 가 없을 때 어떻게 ?
-	Location	*location = server->getLocation(dial->req.getUri());
+	Location	*location = server->getLocation(dial->req.getUri().substr(0, dial->req.getUri().find("?")));
 
 	//maybe 400: Bad Request
 	if (dial->res.getStatusCode() != 0)
@@ -140,7 +140,7 @@ void
 	if (dial->res.getResource() != NULL)
 		return ;
 
-	std::string resource_path = dial->req.getUri();
+	std::string resource_path = dial->req.getUri().substr(0, dial->req.getUri().find("?"));
 	resource_path.replace(0, location->getPath().length(), location->getRoot());
 	try
 	{
