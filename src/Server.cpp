@@ -33,12 +33,6 @@ void
 }
 
 void
-	Server::setReturnInfo(int code, std::string uri)
-{
-	this->return_info = std::make_pair(code, uri);
-}
-
-void
 	Server::setAutoindex(std::string on_off_string)
 {
 	if (on_off_string == "on")
@@ -254,7 +248,7 @@ void
 	Server::makeGeneralHeaders(Dialogue *dial)
 {
 	Response &response = dial->res;
-	
+
 	response.addHeader(std::string("Date"), this->dateHeader());
 	response.addHeader(std::string("Server"), "hsonseyu Server");
 	if (dial->req.keepConnection())
@@ -551,7 +545,7 @@ Location*
 	iter = locations.find(uri_loc);
 	if (iter != locations.end())
 		return (iter->second);
-	
+
 	return (0);
 }
 
@@ -559,12 +553,6 @@ unsigned int
 	Server::getBodyLimit()
 {
 	return (body_limit);
-}
-
-size_t
-	Server::getReturnCode()
-{
-	return (return_info.first);
 }
 
 std::map<int, std::string>

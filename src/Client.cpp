@@ -126,13 +126,8 @@ void
 		server->makeErrorResponse(dial, location, 413);
 
 	// Return - 3xx
-	else if (server->getReturnCode() != 0 || location->getReturnCode() != 0)
-	{
-		if (server->getReturnCode() != 0)
-			server->makeReturnResponse(dial, location, server->getReturnCode());
-		else
-			server->makeReturnResponse(dial, location, location->getReturnCode());
-	}
+	else if (location->getReturnCode() != 0)
+		server->makeReturnResponse(dial, location, location->getReturnCode());
 
 	if (dial->status == Dialogue::READY_TO_RESPONSE)
 		return EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());

@@ -17,18 +17,9 @@ int	main(int argc, char *argv[])
 		return (1);
 	}
 
-	try
-	{
-		EventHandler	*evh = new EventHandler(config_path);
-		evh->start();
-		delete evh;
-	}
-	catch (std::exception &e)
-	{
-		std::cerr << e.what() << std::endl;
-		return (1);
-	}
-
+	EventHandler	*evh = new EventHandler(config_path);
+	evh->start();
+	delete evh;
 
 	return (0);
 }

@@ -129,15 +129,6 @@ static Server
 			else
 				server->addLocation(location_path, parseLocation(config_queue));
 		}
-		else if (word == "return")
-		{
-			int	code = std::atoi(front_pop(config_queue).c_str());
-
-			if (config_queue.front() == ";")
-				server->setReturnInfo(code, "");
-			else
-				server->setReturnInfo(code, front_pop(config_queue));
-		}
 		else
 			throw BadDirective(word);
 
