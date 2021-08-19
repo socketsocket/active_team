@@ -7,7 +7,7 @@
 # include <deque>
 
 # include "CGI.hpp"
-# include "Resource.hpp"
+class	Resource;
 
 class	Response
 {
