@@ -106,7 +106,10 @@ static Server
 		}
 		else if (word == "server_name")
 		{
-			names.push_back(front_pop(config_queue));
+			if (config_queue.front() == ";")
+				names.push_back("");
+			else
+				names.push_back(front_pop(config_queue));
 		}
 		else if (word == "client_body_limit")
 		{
@@ -138,6 +141,8 @@ static Server
 
 	if (ports.size() == 0)
 		ports.push_back(80);
+	if (names.size() == 0)
+		throw NoExpectedDirective("server_name");
 	return (server);
 }
 
