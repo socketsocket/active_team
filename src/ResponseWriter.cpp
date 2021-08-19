@@ -12,7 +12,8 @@ ResponseWriter::ResponseWriter(int client_fd)
 ResponseWriter::~ResponseWriter()
 {}
 
-void	ResponseWriter::pushResponse(Response &res)
+void
+	ResponseWriter::pushResponse(Response &res)
 {
 	if (res.getHeaders().find("Connection")->second == "close")
 		last_communication = true;

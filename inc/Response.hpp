@@ -7,6 +7,7 @@
 # include <deque>
 
 # include "CGI.hpp"
+class	Resource;
 
 class	Response
 {
@@ -47,8 +48,8 @@ private:
 	std::map<std::string, std::string>	header;
 	std::string							body;
 
-	CGI	*cgi;
-	Resource *resource;
+	CGI			*cgi;
+	Resource	*resource;
 };
 
 #endif

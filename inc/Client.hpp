@@ -11,7 +11,6 @@
 
 struct	Dialogue;
 class	Location;
-// class	ResponseWriter;
 
 # include "FDManager.hpp"
 # include "Dialogue.hpp"
@@ -44,12 +43,12 @@ private:
 
 	Client&	operator=(const Client& other);
 
-	void 				prepareResponse(Dialogue *dial);
-	std::string*		isCGIRequest(Request &req, Location &location);
+	void 					prepareResponse(Dialogue *dial);
+	std::string*			isCGIRequest(Request &req, Location &location);
 
-	PortManager			*pm;
-	RequestReader		reader;
-	ResponseWriter		writer;
+	PortManager				*pm;
+	RequestReader			reader;
+	ResponseWriter			writer;
 
 	std::queue<Dialogue *>	dialogues;
 };
