@@ -4,8 +4,6 @@
 #include "Exception.hpp"
 #include "EventHandlerInstance.hpp"
 
-/* static */
-
 /* public */
 Resource::Resource(int fd, Dialogue *dialogue)
 	: FDManager(fd),
@@ -60,5 +58,3 @@ void
 {
 	throw UnexceptedEventOccured("Resource timer event");
 }
-
-/* private */

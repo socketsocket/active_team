@@ -9,7 +9,10 @@ Server::~Server()
 {
 }
 
-//config parsing
+//* ---------------------------------------- */
+/*               config parsing              */
+/* ---------------------------------------- */
+
 void
 	Server::addLocation(std::string path, Location *loc)
 {
@@ -46,7 +49,221 @@ void
 		throw BadDirective(on_off_string);
 }
 
-//make Response
+//* ---------------------------------------- */
+/*              make Response                */
+/* ---------------------------------------- */
+
+void
+	Server::makeErrorResponse(Dialogue *dial, Location *location, size_t error_code)
+{
+	Response &response = dial->res;
+	response.makeStartLine("HTTP/1.1", error_code, this->statusMessage(error_code));
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	response.addHeader(std::string("Content-Type"), this->contentTypeHeader(".html"));
+	response.addHeader(std::string("Connection"), "close");
+
+	int fd = 0;
+
+	if (location != NULL && location->getErrorPages().count(error_code))
+		fd = open(location->getErrorPages()[error_code].c_str(), O_RDONLY);
+	else if (this->getErrorPages().count(error_code))
+		fd = open(this->getErrorPages()[error_code].c_str(), O_RDONLY);
+	else
+	{
+		response.addBody(this->generateErrorPage(error_code));
+		dial->status = Dialogue::READY_TO_RESPONSE;
+		return ;
+	}
+
+	if (fd == -1)
+		response.addBody(this->generateErrorPage(error_code));
+	else
+	{
+		Resource	*resource = new Resource(fd, dial);
+		EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
+		return ;
+	}
+
+	dial->status = Dialogue::READY_TO_RESPONSE;
+}
+
+void
+	Server::makeReturnResponse(Dialogue *dial, Location *location, size_t return_code)
+{
+	Response &response = dial->res;
+	response.makeStartLine("HTTP/1.1", return_code, this->statusMessage(return_code));
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	response.addHeader(std::string("Location"), location->getReturnInfo().second);
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
+
+	dial->status = Dialogue::READY_TO_RESPONSE;
+}
+
+
+std::string
+	Server::makeAutoIndexPage(std::string path, std::string uri, Location *location)
+{
+	(void)location;
+	DIR *dir;
+	struct dirent *dir_read;
+
+	std::string body;
+	body += "<html>\r\n";
+	body += "<head>\r\n";
+	body += "<title>Index of " + uri + "</title>\r\n";
+	body += "</head>\r\n";
+	body += "<body>\r\n";
+	body += "<h1>Index of " + uri + "</h1>\r\n";
+	body += "<hr>\r\n";
+	body += "<pre>\r\n";
+
+	if((dir = opendir(path.c_str())) == 0)
+		return (this->generateErrorPage(500));
+
+	while ((dir_read = readdir(dir)) != 0)
+	{
+		std::string name = std::string(dir_read->d_name);
+		if (dir_read->d_type == DT_DIR)
+			name += '/';
+		body += "<a href=\"" + name + "\">" + name + "</a><br>";
+
+		//dd-mm-yyyy hh:mm
+		time_t	curr_time = time(NULL);
+		struct	tm*	timeinfo;
+		char	buffer[64];
+		timeinfo = localtime(&curr_time);
+		strftime(buffer, 64, "%d-%b-%Y %H:%M", timeinfo);
+		body += "                                       " + std::string(buffer) + "\n";
+
+	}
+	closedir(dir);
+
+	body += "</pre>\r\n";
+	body += "<hr>\r\n";
+	body += "</body>\r\n";
+	body += "</html>";
+
+	return (body);
+}
+
+
+void
+	Server::makeGETResponse(Dialogue *dial, Location *location, std::string path)
+{
+	Response &response = dial->res;
+
+	if (checkPath(path) == Directory)
+	{
+		//Check Index Files
+		if (path[path.length() - 1] != '/')
+			path += '/';
+		struct stat buf;
+		bool found = false;
+		for (std::vector<std::string>::iterator iter = location->getIndex().begin(); iter != location->getIndex().end(); iter++)
+		{
+			if (stat((path + *iter).c_str(), &buf) == 0)
+			{
+				found = true;
+				path = path + *iter;
+				break ;
+			}
+		}
+		if (found == false && location->isAutoIndex() == true)
+		{
+			response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+			makeGeneralHeaders(dial);
+			response.addHeader("Content-Type", this->contentTypeHeader(".html"));
+			response.addBody(this->makeAutoIndexPage(path, path, location));
+			dial->status = Dialogue::READY_TO_RESPONSE;
+			return ;
+		}
+		if (checkPath(path) == NotFound || checkPath(path) == Directory)
+			return this->makeErrorResponse(dial, location, 404);
+	}
+
+	//Specific File! Open!
+	int	fd = open(path.c_str(), O_RDONLY);
+	if (fd == -1)
+		return this->makeErrorResponse(dial, location, 404);
+
+	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+	makeGeneralHeaders(dial);
+
+	Resource *resource = new Resource(fd, dial);
+	EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
+}
+
+
+void
+	Server::makePOSTResponse(Dialogue *dial, Location *location, std::string resource_path)
+{
+	//Create File if Requres Post is not in case CGI
+	Response &response = dial->res;
+
+	int fd;
+	if (checkPath(resource_path) == File) //있으면 append
+	{
+		if ((fd = open(resource_path.c_str(), O_WRONLY | O_APPEND | O_NONBLOCK, 0644)) == -1)
+			return this->makeErrorResponse(dial, location, 500);
+	}
+	else if (checkPath(resource_path) == NotFound) //없으면 create
+	{
+		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK, 0644)) == -1)
+			return this->makeErrorResponse(dial, location, 500);
+	}
+	else
+		return this->makeErrorResponse(dial, location, 403);
+
+	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
+	makeGeneralHeaders(dial);
+
+	Resource *resource = new Resource(fd, dial);
+	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
+}
+
+void
+	Server::makeDELETEResponse(Dialogue *dial, Location *location, std::string resource_path)
+{
+	(void)location;
+	//resouece_path is already Perfect Path
+	Response &response = dial->res;
+
+	if (checkPath(resource_path) == Directory)
+	{
+		if (this->deleteDirectory(resource_path) == 1)
+			response.addBody(this->generateErrorPage(500));
+	}
+	else if (checkPath(resource_path) == File)
+		unlink(resource_path.c_str());
+	else
+		return this->makeErrorResponse(dial, location, 404);
+
+	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
+	makeGeneralHeaders(dial);
+	response.addBody(this->makeHTMLPage("File deleted."));
+
+	dial->status = Dialogue::READY_TO_RESPONSE;
+}
+
+void
+	Server::makeGeneralHeaders(Dialogue *dial)
+{
+	Response &response = dial->res;
+	
+	response.addHeader(std::string("Date"), this->dateHeader());
+	response.addHeader(std::string("Server"), "hsonseyu Server");
+	if (dial->req.keepConnection())
+		response.addHeader(std::string("Connection"), "keep-alive");
+	else
+		response.addHeader(std::string("Connection"), "close");
+}
+
+
 std::string
 	Server::makeHTMLPage(std::string content)
 {
@@ -94,211 +311,7 @@ std::string
 	return (html);
 }
 
-void Server::makeErrorResponse(Dialogue *dial, Location *location, size_t error_code)
-{
-	Response &response = dial->res;
-	response.makeStartLine("HTTP/1.1", error_code, this->statusMessage(error_code));
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	response.addHeader(std::string("Content-Type"), this->contentTypeHeader(".html"));
-	response.addHeader(std::string("Connection"), "close");
-
-	int fd = 0;
-	// struct stat buf;
-
-	if (location != NULL && location->getErrorPages().count(error_code))
-		fd = open(location->getErrorPages()[error_code].c_str(), O_RDONLY);
-	else if (this->getErrorPages().count(error_code))
-		fd = open(this->getErrorPages()[error_code].c_str(), O_RDONLY);
-	else
-	{
-		response.addBody(this->generateErrorPage(error_code));
-		dial->status = Dialogue::READY_TO_RESPONSE;
-		return ;
-	}
-
-	if (fd == -1)
-		response.addBody(this->generateErrorPage(error_code));
-	else
-	{
-		Resource	*resource = new Resource(fd, dial);
-		EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
-		return ;
-	}
-
-	dial->status = Dialogue::READY_TO_RESPONSE;
-}
-
-void	Server::makeReturnResponse(Dialogue *dial, Location *location, size_t return_code)
-{
-	Response &response = dial->res;
-	response.makeStartLine("HTTP/1.1", return_code, this->statusMessage(return_code));
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	response.addHeader(std::string("Location"), location->getReturnInfo().second);
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
-
-	dial->status = Dialogue::READY_TO_RESPONSE;
-}
-
-
-std::string	Server::makeAutoIndexPage(std::string path, std::string uri, Location *location)
-{
-	(void)location;
-	DIR *dir;
-	struct dirent *dir_read;
-
-	std::string body;
-	body += "<html>\r\n";
-	body += "<head>\r\n";
-	body += "<title>Index of " + uri + "</title>\r\n";
-	body += "</head>\r\n";
-	body += "<body>\r\n";
-	body += "<h1>Index of " + uri + "</h1>\r\n";
-	body += "<hr>\r\n";
-	body += "<pre>\r\n";
-
-	if((dir = opendir(path.c_str())) == 0)
-		return (this->generateErrorPage(500));
-
-	while ((dir_read = readdir(dir)) != 0)
-	{
-		std::string name = std::string(dir_read->d_name);
-		if (dir_read->d_type == DT_DIR)
-			name += '/';
-		body += "<a href=\"" + name + "\">" + name + "</a><br>";
-
-		//dd-mm-yyyy hh:mm
-		time_t	curr_time = time(NULL);
-		struct	tm*	timeinfo;
-		char	buffer[64];
-		timeinfo = localtime(&curr_time);
-		strftime(buffer, 64, "%d-%b-%Y %H:%M", timeinfo);
-		body += "                                       " + std::string(buffer) + "\n";
-
-	}
-	closedir(dir);
-
-	body += "</pre>\r\n";
-	body += "<hr>\r\n";
-	body += "</body>\r\n";
-	body += "</html>";
-
-	return (body);
-}
-
-
-void Server::makeGETResponse(Dialogue *dial, Location *location, std::string path)
-{
-	Response &response = dial->res;
-
-	if (checkPath(path) == Directory)
-	{
-		//Check Index Files
-		if (path[path.length() - 1] != '/')
-			path += '/';
-		struct stat buf;
-		bool found = false;
-		for (std::vector<std::string>::iterator iter = location->getIndex().begin(); iter != location->getIndex().end(); iter++)
-		{
-			if (stat((path + *iter).c_str(), &buf) == 0)
-			{
-				found = true;
-				path = path + *iter;
-				break ;
-			}
-		}
-		if (found == false && location->isAutoIndex() == true)
-		{
-			response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
-			makeGeneralHeaders(dial);
-			response.addHeader("Content-Type", this->contentTypeHeader(".html"));
-			response.addBody(this->makeAutoIndexPage(path, path, location));
-			dial->status = Dialogue::READY_TO_RESPONSE;
-			return ;
-		}
-		if (checkPath(path) == NotFound || checkPath(path) == Directory)
-			return this->makeErrorResponse(dial, location, 404);
-	}
-
-	//경로가 특정 파일로 지정됨! 오픈!
-	int	fd = open(path.c_str(), O_RDONLY);
-	if (fd == -1)
-		return this->makeErrorResponse(dial, location, 404);
-
-	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
-	makeGeneralHeaders(dial);
-
-	Resource *resource = new Resource(fd, dial);
-	EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
-}
-
-
-void Server::makePOSTResponse(Dialogue *dial, Location *location, std::string resource_path)
-{
-	//POST 는 대부분 cgi 처리를 원함. cgi 가 아닌 서버에서의 POST 의 경우 파일 생성
-	Response &response = dial->res;
-
-	int fd;
-	if (checkPath(resource_path) == File) //있으면 append
-	{
-		if ((fd = open(resource_path.c_str(), O_WRONLY | O_APPEND | O_NONBLOCK, 0644)) == -1)
-			return this->makeErrorResponse(dial, location, 500);
-	}
-	else if (checkPath(resource_path) == NotFound) //없으면 create
-	{
-		if ((fd = open(resource_path.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK, 0644)) == -1)
-			return this->makeErrorResponse(dial, location, 500);
-	}
-	else
-		return this->makeErrorResponse(dial, location, 403);
-
-	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
-	makeGeneralHeaders(dial);
-
-	Resource *resource = new Resource(fd, dial);
-	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
-}
-
-void Server::makeDELETEResponse(Dialogue *dial, Location *location, std::string resource_path)
-{
-	(void)location;
-	//인자로 받은 resouece_path 는 이미 로케이션 내 root + 추가 경로까지 완성된 경로
-	Response &response = dial->res;
-
-	if (checkPath(resource_path) == Directory)
-	{
-		if (this->deleteDirectory(resource_path) == 1)
-			response.addBody(this->generateErrorPage(500));
-	}
-	else if (checkPath(resource_path) == File)
-		unlink(resource_path.c_str());
-	else
-		return this->makeErrorResponse(dial, location, 404);
-
-	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
-	makeGeneralHeaders(dial);
-	response.addBody(this->makeHTMLPage("File deleted."));
-
-	dial->status = Dialogue::READY_TO_RESPONSE;
-}
-
-void	Server::makeGeneralHeaders(Dialogue *dial)
-{
-	Response &response = dial->res;
-	
-	response.addHeader(std::string("Date"), this->dateHeader());
-	response.addHeader(std::string("Server"), "hsonseyu Server");
-	if (dial->req.keepConnection())
-		response.addHeader(std::string("Connection"), "keep-alive");
-	else
-		response.addHeader(std::string("Connection"), "close");
-}
-
-int		Server::checkPath(std::string path)
+int	Server::checkPath(std::string path)
 {
 	struct stat buf;
 
@@ -315,8 +328,7 @@ int		Server::checkPath(std::string path)
 	}
 }
 
-//디렉토리 오픈해서 다 지우는데 그 안에서도 파일이면 unlink, 디렉토리면 이 과정 반복
-int		Server::deleteDirectory(std::string path)
+int	Server::deleteDirectory(std::string path)
 {
 	DIR *dir;
 	struct dirent *dir_read;
@@ -341,73 +353,38 @@ int		Server::deleteDirectory(std::string path)
 	return (0);
 }
 
-std::string	Server::statusMessage(size_t code) {
-	static std::map<size_t, std::string>	status;
+std::string
+	Server::dateHeader(void)
+{
+	time_t curr_time = time(NULL);
+	struct tm* time_info = localtime(&curr_time);
+	char buffer[4096];
 
-	if (status.size() == 0)
-	{
-		status[100] = "Continue";
-		status[101] = "Switching Protocols";
-		status[102] = "Processing";
-		status[200] = "OK";
-		status[201] = "Created";
-		status[202] = "Accepted";
-		status[203] = "Non-authoritative Information";
-		status[204] = "No Content";
-		status[205] = "Reset Content";
-		status[206] = "Partial Content";
-		status[207] = "Multi-Status";
-		status[208] = "Already Reported";
-		status[226] = "IM Used";
-		status[300] = "Multiple Choices";
-		status[301] = "Moved Permanently";
-		status[302] = "Found";
-		status[303] = "See Other";
-		status[304] = "Not Modified";
-		status[305] = "Use Proxy";
-		status[307] = "Temporary Redirect";
-		status[308] = "Permanent Redirect";
-		status[400] = "Bad Request";
-		status[401] = "Unauthorized";
-		status[402] = "Payment Required";
-		status[403] = "Forbidden";
-		status[404] = "Not found";
-		status[405] = "Method Not Allowed";
-		status[406] = "Not Acceptable";
-		status[407] = "Proxy Authentication Required";
-		status[408] = "Required Timeout";
-		status[409] = "Conflict";
-		status[410] = "Gone";
-		status[411] = "Length Required";
-		status[412] = "Precondition Failed";
-		status[413] = "Request Entity Too Large";
-		status[414] = "Request URI Too Long";
-		status[415] = "Unsupported Media Type";
-		status[416] = "Requested Range Not Satisfiable";
-		status[417] = "Expectation Failed";
-		status[418] = "IM_A_TEAPOT";
-		status[500] = "Internal Server Error";
-		status[501] = "Not Implemented";
-		status[502] = "Bad Gateway";
-		status[503] = "Service Unavailable";
-		status[504] = "Gateway Timeout";
-		status[505] = "HTTP Version Not Supported";
-		status[506] = "Variant Also Negotiates";
-		status[507] = "Insufficient Storage";
-		status[508] = "Loop Detected";
-		status[510] = "Not Extened";
-		status[511] = "Network Authentication Required";
-		status[599] = "Network Connect Timeout Error";
-	}
-	if (status.count(code) == 0)
-	{
-		assert(true);
-		return "";
-	}
-	else
-		return status[code];
+	strftime(buffer, 4096, "%a, %d %b %Y %H:%M:%S GMT", time_info);
+	return (std::string(buffer));
 }
 
+std::string
+	Server::lastModifiedHeader(void)
+{
+	struct stat	sb;
+	struct tm*	timeinfo = localtime(&sb.st_mtime);
+	char buffer[4096];
+
+	strftime(buffer, 4096, "%a, %d, %b %Y %X GMT", timeinfo);
+
+	return (std::string(buffer));
+}
+
+std::string
+	Server::connectionHeader(Request &req)
+{
+	std::map<std::string, std::string>::iterator iter = req.getHeaders().find("Connection-Encoding");
+	if (iter != req.getHeaders().end())
+		return (iter->second);
+	else
+		return ("keep-alive");
+}
 
 std::string	Server::contentTypeHeader(std::string extension) {
 	static std::map<std::string, std::string>	mimeType;
@@ -479,38 +456,77 @@ std::string	Server::contentTypeHeader(std::string extension) {
 		return mimeType[extension];
 }
 
-std::string
-	Server::dateHeader(void)
-{
-	time_t curr_time = time(NULL);
-	struct tm* time_info = localtime(&curr_time);
-	char buffer[4096];
+std::string	Server::statusMessage(size_t code) {
+	static std::map<size_t, std::string>	status;
 
-	strftime(buffer, 4096, "%a, %d %b %Y %H:%M:%S GMT", time_info);
-	return (std::string(buffer));
-}
-
-std::string
-	Server::lastModifiedHeader(void)
-{
-	struct stat	sb;
-	struct tm*	timeinfo = localtime(&sb.st_mtime);
-	char buffer[4096];
-
-	strftime(buffer, 4096, "%a, %d, %b %Y %X GMT", timeinfo);
-
-	return (std::string(buffer));
-}
-
-std::string
-	Server::connectionHeader(Request &req)
-{
-	std::map<std::string, std::string>::iterator iter = req.getHeaders().find("Connection-Encoding");
-	if (iter != req.getHeaders().end())
-		return (iter->second);
+	if (status.size() == 0)
+	{
+		status[100] = "Continue";
+		status[101] = "Switching Protocols";
+		status[102] = "Processing";
+		status[200] = "OK";
+		status[201] = "Created";
+		status[202] = "Accepted";
+		status[203] = "Non-authoritative Information";
+		status[204] = "No Content";
+		status[205] = "Reset Content";
+		status[206] = "Partial Content";
+		status[207] = "Multi-Status";
+		status[208] = "Already Reported";
+		status[226] = "IM Used";
+		status[300] = "Multiple Choices";
+		status[301] = "Moved Permanently";
+		status[302] = "Found";
+		status[303] = "See Other";
+		status[304] = "Not Modified";
+		status[305] = "Use Proxy";
+		status[307] = "Temporary Redirect";
+		status[308] = "Permanent Redirect";
+		status[400] = "Bad Request";
+		status[401] = "Unauthorized";
+		status[402] = "Payment Required";
+		status[403] = "Forbidden";
+		status[404] = "Not found";
+		status[405] = "Method Not Allowed";
+		status[406] = "Not Acceptable";
+		status[407] = "Proxy Authentication Required";
+		status[408] = "Required Timeout";
+		status[409] = "Conflict";
+		status[410] = "Gone";
+		status[411] = "Length Required";
+		status[412] = "Precondition Failed";
+		status[413] = "Request Entity Too Large";
+		status[414] = "Request URI Too Long";
+		status[415] = "Unsupported Media Type";
+		status[416] = "Requested Range Not Satisfiable";
+		status[417] = "Expectation Failed";
+		status[418] = "IM_A_TEAPOT";
+		status[500] = "Internal Server Error";
+		status[501] = "Not Implemented";
+		status[502] = "Bad Gateway";
+		status[503] = "Service Unavailable";
+		status[504] = "Gateway Timeout";
+		status[505] = "HTTP Version Not Supported";
+		status[506] = "Variant Also Negotiates";
+		status[507] = "Insufficient Storage";
+		status[508] = "Loop Detected";
+		status[510] = "Not Extened";
+		status[511] = "Network Authentication Required";
+		status[599] = "Network Connect Timeout Error";
+	}
+	if (status.count(code) == 0)
+	{
+		assert(true);
+		return "";
+	}
 	else
-		return ("keep-alive");
+		return status[code];
 }
+
+//* ---------------------------------------- */
+/*                getter                     */
+/* ---------------------------------------- */
+
 
 Location*
 	Server::getLocation(std::string uri)
@@ -518,6 +534,7 @@ Location*
 	size_t pos = uri.length() - 1;
 	std::string uri_loc = uri;
 
+	// check as DIR first
 	if (uri[pos] != '/')
 		uri_loc += '/';
 
@@ -525,7 +542,7 @@ Location*
 	if (iter != locations.end())
 		return (iter->second);
 
-	//파일 형식으로 들어온 경우
+	//if file
 	uri_loc.erase(pos);
 	while (uri[pos] != '/')
 		pos--;

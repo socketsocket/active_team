@@ -9,10 +9,10 @@ Request::~Request()
 {
 }
 
-// int		Request::getStatus()
-// {
-// 	return (status);
-// }
+//* ---------------------------------------- */
+/*                getter                     */
+/* ---------------------------------------- */
+
 
 Request::Method
 	Request::getMethod()
@@ -20,12 +20,14 @@ Request::Method
 	return (method);
 }
 
-std::string& Request::getUri()
+std::string&
+	Request::getUri()
 {
 	return (uri);
 }
 
-std::string Request::getHttpVersion()
+std::string
+	Request::getHttpVersion()
 {
 	return (http_version);
 }
@@ -36,50 +38,43 @@ std::map<std::string, std::string>&
 	return (headers);
 }
 
-std::string&	Request::getBody()
+std::string&
+	Request::getBody()
 {
 	return (body);
 }
 
-// int	Request::getBodyType()
-// {
-// 	return (body_type);
-// }
+//* ---------------------------------------- */
+/*                setter                     */
+/* ---------------------------------------- */
 
-// void	Request::setStatus(int status)
-// {
-// 	this->status = status;
-// }
-
-void
-	Request::setMethod(Method method)
+void	Request::setMethod(Method method)
 {
 	this->method = method;
 }
 
-void
-	Request::setUri(std::string uri)
+void	Request::setUri(std::string uri)
 {
 	this->uri = uri;
 }
 
-void Request::setHttpVersion(std::string version)
+void	Request::setHttpVersion(std::string version)
 {
 	this->http_version = version;
 }
 
-void Request::setHeaders(std::string key, std::string val)
+void	Request::setHeaders(std::string key, std::string val)
 {
 	if (headers.insert(std::make_pair(key, val)).second == false)
 		throw BadRequest();
 }
 
-void Request::addBody(std::string body)
+void	Request::addBody(std::string body)
 {
 	this->body += body;
 }
 
-bool Request::keepConnection()
+bool	Request::keepConnection()
 {
 	std::map<std::string, std::string>::iterator	found;
 
@@ -88,8 +83,3 @@ bool Request::keepConnection()
 		return (false);
 	return (true);
 }
-
-// void Request::setBodyType(int type)
-// {
-// 	this->body_type = type;
-// }
