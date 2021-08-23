@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "EventHandlerInstance.hpp"
 #include "FDManager.hpp"
