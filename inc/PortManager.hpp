@@ -9,7 +9,7 @@ class	Server;
 # include "FDManager.hpp"
 # include "Server.hpp"
 
-# define PORT_BACKLOG	10
+# define PORT_BACKLOG	200
 
 class	PortManager : public FDManager
 {
