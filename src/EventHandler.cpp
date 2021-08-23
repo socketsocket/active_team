@@ -178,7 +178,7 @@ static void
 
 /* public */
 
-EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_second(60)
+EventHandler::EventHandler(std::string config_file_path)
 {
 	EventHandlerInstance::setInstance(this);
 
@@ -217,6 +217,7 @@ EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_sec
 		else
 			throw BadDirective(config_queue.front());
 	}
+	new_events.reserve(new_event_reserve_size);
 }
 
 EventHandler::~EventHandler()
@@ -258,8 +259,10 @@ void
 	{
 		int	num_of_event;
 
-		if ((num_of_event = kevent(kq, NULL, 0, event_list, MAX_EVENT_SIZE, NULL)) == -1)
+		if ((num_of_event = kevent(kq, &new_events[0], new_events.size(), event_list, MAX_EVENT_SIZE, NULL)) == -1)
 			throw SystemCallError("kevent");
+		new_events.clear();
+		new_events.reserve(new_event_reserve_size);
 
 		for (struct kevent *curr_event = event_list; curr_event < (event_list + num_of_event); ++curr_event)
 		{
@@ -300,41 +303,29 @@ void
 void
 	EventHandler::enableReadEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw SystemCallError("kevent");
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 }
 
 void
 	EventHandler::enableWriteEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT | EV_ENABLE, 0, 0, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw SystemCallError("kevent");
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT | EV_ENABLE, 0, 0, NULL);
 }
 
 void
 	EventHandler::disableWriteEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw (SystemCallError("kevent"));
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 }
 
 void
 	EventHandler::setTimerEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, socket_timeout_in_second, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw SystemCallError("kevent");
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, socket_timeout_in_second, NULL);
 }
 
 /* private */

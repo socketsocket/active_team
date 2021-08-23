@@ -88,8 +88,6 @@ bool
 	else if ((size_t)write_bytes == buffer.size())
 	{
 		buffer.clear();
-		if (cgi)
-			cgi->start();
 		return (last_communication);
 	}
 	else

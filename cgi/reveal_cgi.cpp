@@ -6,8 +6,8 @@
 #include <fstream>
 #include <sstream>
 
-#define CHUNK_LEN	1000UL
-#define MAX_OFFSET	1000UL
+#define CHUNK_LEN	8162UL
+#define MAX_OFFSET	8162L
 
 static void
 	printHeader(void)
@@ -262,11 +262,13 @@ static void
 		}
 		else if (strcmp(method, "POST") == 0)
 		{
-			char	buffer[MAX_OFFSET + 1];
+			ssize_t	read_size = strtol(getenv("CONTENT_LENGTH"), NULL, 10);
 			ssize_t	read_bytes;
+			char	buffer[read_size + 1];
 
-			while ((read_bytes = read(0, buffer, MAX_OFFSET)) > 0)
+			while ((read_bytes = read(0, buffer, std::min(read_size, MAX_OFFSET))) > 0)
 			{
+				read_size -= read_bytes;
 				buffer[read_bytes] = '\0';
 				query_stream << buffer;
 			}
@@ -294,8 +296,8 @@ int	main(int argc, char **argv)
 	double		total_duration	= 1.2;
 	double		top_duration	= 0.1;
 	double		bot_duration	= 0.5;
-	std::string	top_string		= "hson seyu webserv";
-	std::string	bot_string		= "CGI Tester";
+	std::string	top_string		= "CGI Tester";
+	std::string	bot_string		= "hson seyu webserv";
 	std::string	top_color		= "#4040bf";
 	std::string	bot_color		= "#bf4060";
 
@@ -320,7 +322,7 @@ int	main(int argc, char **argv)
 		return (1);
 	}
 
-	log << argv[1] << "\r\n";
+	log << "Target file : " << argv[1] << "\r\n";
 	log << total_duration << "\r\n";
 	log << top_duration << "\r\n";
 	log << bot_duration << "\r\n";
