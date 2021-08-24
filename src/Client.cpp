@@ -61,8 +61,11 @@ void
 		delete dialogues.front();
 		dialogues.pop();
 	}
-	if ((writer.isChunked() && writer.writeChunkedResponse(write_size)) || writer.writeResponse(write_size))
+	if ((writer.isChunked())
+	    if (writer.writeChunkedResponse(write_size)))
 		delete this;
+	else if (writer.writeResponse(write_size))
+	    delete this;
 	else if (dialogues.empty() == false && dialogues.front()->status == Dialogue::READY_TO_WRITE)
 		EventHandlerInstance::getInstance().enableWriteEvent(getFD());
 }
