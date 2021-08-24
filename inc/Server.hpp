@@ -4,7 +4,7 @@
 # include <map>
 # include <string>
 
-# ifdef __apple__
+# ifdef __APPLE__
 #  include <sys/event.h>
 # elif __linux__
 #  include <kqueue/sys/event.h>
