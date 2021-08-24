@@ -81,8 +81,8 @@ void
 		response.addBody(this->generateErrorPage(error_code));
 	else
 	{
-		Resource	*resource = new Resource(fd, dial);
-		EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
+		dial->res.setResource(new Resource(fd, dial));
+		EventHandlerInstance::getInstance().enableReadEvent(fd);
 		return ;
 	}
 
