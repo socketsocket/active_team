@@ -56,7 +56,7 @@ void
 	if (writer.emptyBuffer() == true)
 	{
 		if (dialogues.empty() == true)
-			throw UnexceptedEventOccured("Client write during empty response queue");
+			return ; //throw UnexceptedEventOccured("Client write during empty response queue");
 		writer.pushResponse(dialogues.front()->res);
 		delete dialogues.front();
 		dialogues.pop();
