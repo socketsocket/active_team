@@ -8,6 +8,7 @@
 ResponseWriter::ResponseWriter(int client_fd)
 	: client_fd(client_fd),
 	  last_communication(false),
+	  cgi(NULL),
 	  is_chunked(false)
 {}
 
@@ -85,7 +86,7 @@ bool
 
 	ssize_t	write_bytes = write(client_fd, &buffer[0], write_size);
 
-	if (write_bytes == 0)
+	if (write_bytes == -1)
 		// throw SystemCallError("write");
 		return (true);
 	else if ((size_t)write_bytes == buffer.length())

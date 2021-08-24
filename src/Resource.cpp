@@ -71,6 +71,7 @@ void
 	{
 		target.clear();
 		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
+		status = DONE;
 	}
 	else
 	{

@@ -103,20 +103,20 @@ static void
 		int server_port)
 {
 	setenv("AUTH_TYPE", "", 1);
-	setenv("CONTENT_LENGTH", findValue(req_header, "content_length").c_str(), 1);
-	setenv("CONTENT_TYPE", findValue(req_header, "content_type").c_str(), 1);
+	setenv("CONTENT_LENGTH", findValue(req_header, "content-length").c_str(), 1);
+	setenv("CONTENT_TYPE", findValue(req_header, "content-type").c_str(), 1);
 	setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 	setenv("HTTP_ACCEPT", findValue(req_header, "accept").c_str(), 1);
-	setenv("HTTP_ACCEPT_CHARSET", findValue(req_header, "accept_charset").c_str(), 1);
-	setenv("HTTP_ACCEPT_ENCODING", findValue(req_header, "accept_encoding").c_str(), 1);
-	setenv("HTTP_ACCEPT_LANGUAGE", findValue(req_header, "accept_language").c_str(), 1);
+	setenv("HTTP_ACCEPT_CHARSET", findValue(req_header, "accept-charset").c_str(), 1);
+	setenv("HTTP_ACCEPT_ENCODING", findValue(req_header, "accept-encoding").c_str(), 1);
+	setenv("HTTP_ACCEPT_LANGUAGE", findValue(req_header, "accept-language").c_str(), 1);
 	setenv("HTTP_CONNECTION", findValue(req_header, "connection").c_str(), 1);
 	setenv("HTTP_COOKIE", findValue(req_header, "cookie").c_str(), 1);
 	setenv("HTTP_FORWARDED", findValue(req_header, "forwarded").c_str(), 1);
 	setenv("HTTP_HOST", findValue(req_header, "host").c_str(), 1);
-	setenv("HTTP_PROXY_AUTHORIZATION", findValue(req_header, "proxy_authorization").c_str(), 1);
+	setenv("HTTP_PROXY_AUTHORIZATION", findValue(req_header, "proxy-authorization").c_str(), 1);
 	setenv("HTTP_REFERER", findValue(req_header, "referer").c_str(), 1);
-	setenv("HTTP_USER_AGENT", findValue(req_header, "user_agent").c_str(), 1);
+	setenv("HTTP_USER_AGENT", findValue(req_header, "user-agent").c_str(), 1);
 	setenv("PATH_INFO", getPathInfo(uri).c_str(), 1);
 	setenv("PATH_TRANSLATED", resource_path.c_str(), 1);
 	setenv("QUERY_STRING", getQueryString(uri).c_str(), 1);
@@ -143,7 +143,7 @@ CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogu
 {
 	struct stat	file_status;
 
-	if (stat(script_path.c_str(), &file_status) == -1)
+	if (stat(script_path.c_str(), &file_status) == -1 || (file_status.st_mode & 0100) == 0)
 		throw Conflict();
 
 	int	cgi_stdin = writer.getReadablePipe();
