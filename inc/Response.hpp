@@ -14,6 +14,8 @@ class	Response
 public:
 	struct	Message { int code; std::string message; };
 
+	typedef std::map<std::string, std::string>	header_type;
+
 	Response();
 	~Response();
 

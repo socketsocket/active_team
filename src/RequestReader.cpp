@@ -60,18 +60,16 @@ void	RequestReader::makeStartLine()
 		return ;
 	start_line = this->buffer.substr(0, pos);
 
-	string_tolower(&start_line[0], &start_line[start_line.size()]);
-
 	pos = start_line.find(' ');
 	tmp = start_line.substr(0, pos);
-	if (tmp == "get")
+	if (tmp == "GET")
 		req.setMethod(Request::GET);
-	else if (tmp == "post")
+	else if (tmp == "POST")
 		req.setMethod(Request::POST);
-	else if (tmp == "delete")
+	else if (tmp == "DELETE")
 		req.setMethod(Request::DELETE);
-	else if (tmp == "put" || tmp == "head" || tmp == "connect" || tmp == "option" 
-			|| tmp == "trace" || tmp == "patch")
+	else if (tmp == "PUT" || tmp == "HEAD" || tmp == "CONNECT" || tmp == "OPTION"
+			|| tmp == "TRACE" || tmp == "PATCH")
 		throw MethodNotAllowed();
 	else
 		throw BadRequest();
@@ -80,7 +78,7 @@ void	RequestReader::makeStartLine()
 	req.setUri(tmp);
 
 	tmp = start_line.substr(start_line.rfind(' ') + 1);
-	if (tmp != "http/1.0" && tmp != "http/1.1")
+	if (tmp != "HTTP/1.0" && tmp != "HTTP/1.1")
 		throw BadRequest();
 	req.setHttpVersion(tmp);
 
@@ -217,6 +215,7 @@ Dialogue*	RequestReader::parseRequest(void)
 
 			dial = new Dialogue(rtn->client_fd);
 			stat = PARSING_START;
+			rtn->status = Dialogue::PROCESSING;
 			return (rtn);
 		}
 		else
@@ -225,6 +224,8 @@ Dialogue*	RequestReader::parseRequest(void)
 	catch (BadRequest &e)
 	{
 		dial->res.setStatusCode(400);
+		if (dial->req.getHeaders().find("host") == dial->req.getHeaders().end())
+			dial->req.setHeaders("host", "");
 
 		Dialogue	*rtn = dial;
 		dial = NULL;
@@ -233,6 +234,8 @@ Dialogue*	RequestReader::parseRequest(void)
 	catch (MethodNotAllowed &e)
 	{
 		dial->res.setStatusCode(405);
+		if (dial->req.getHeaders().find("host") == dial->req.getHeaders().end())
+			dial->req.setHeaders("host", "");
 
 		Dialogue	*rtn = dial;
 		dial = NULL;

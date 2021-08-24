@@ -8,20 +8,62 @@
 
 struct	Dialogue;
 
-class	CGI : public FDManager
+class	CGI
 {
 public:
+	class	CGIWriter : public FDManager
+	{
+	public:
+		CGIWriter(Dialogue *dialogue);
+		virtual ~CGIWriter();
+
+		virtual void	readEvent(long read_size, short flags);
+		virtual void	writeEvent(long write_size);
+		virtual void	timerEvent();
+
+		int	getReadablePipe();
+
+	private:
+		CGIWriter(const CGIWriter &other);
+
+		CGIWriter&	operator=(const CGIWriter &other);
+
+		Dialogue	*dialogue;
+		int			readable_pipe;
+	};
+
+	class	CGIReader : public FDManager
+	{
+	public:
+		enum Status { HEADER, BODY, DONE };
+
+		CGIReader(Dialogue *dialogue, CGI *cgi);
+		virtual ~CGIReader();
+
+		virtual void	readEvent(long read_size, short flags);
+		virtual void	writeEvent(long write_size);
+		virtual void	timerEvent();
+
+		int	getWritablePipe();
+
+	private:
+		CGIReader(const CGIReader &other);
+
+		CGIReader&	operator=(const CGIReader &other);
+
+		Dialogue	*dialogue;
+		int			writable_pipe;
+		std::string	buffer;
+		CGI			*cgi;
+		Status		status;
+
+		static const ssize_t	MAX_OFFSET;
+	};
+
 	struct Query { std::string name; std::string value; };
 
 	CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogue, int server_port);
-	virtual ~CGI();
-
-	void	setPrintFD(int fd);
-	void	addQuery(std::string query_string);
-
-	virtual void	readEvent(long read_size);
-	virtual void	writeEvent(long write_size);
-	virtual void	timerEvent();
+	~CGI();
 
 	void	start();
 
@@ -31,7 +73,9 @@ private:
 
 	CGI&	operator=(const CGI &other);
 
-	int			script_stdin;
+	CGIReader	reader;
+	CGIWriter	writer;
+
 	pid_t		script_pid;
 	std::string	&script_path;
 	std::string	resource_path;

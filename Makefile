@@ -6,7 +6,7 @@
 #    By: seyu <seyu@student.42seoul.kr>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/10/10 23:07:12 by seheon            #+#    #+#              #
-#    Updated: 2021/08/18 11:00:46 by seyu             ###   ########.fr        #
+#    Updated: 2021/08/24 13:13:21 by seyu             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -94,8 +94,8 @@ VPATH	=	$(DIR_SRC) $(addprefix $(DIR_SRC)/, $(SUBDIRS))
 # ----------------------------------
 
 CC		=	clang++
-CFLAGS	=	-Wall -Wextra -Werror -g3 -fsanitize=address
-CLIBFMW	=
+CFLAGS	=	-Wall -Wextra -Werror -g3 -fsanitize=address #-fsanitize=leak
+CLIBFMW	=	#-lkqueue
 
 # ----------------------------------
 # Rules

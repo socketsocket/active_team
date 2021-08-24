@@ -13,8 +13,7 @@ class	PortManager;
 # include "Dialogue.hpp"
 # include "PortManager.hpp"
 
-# define MAX_LINE_LENGTH	80
-# define MAX_EVENT_SIZE		10
+# define MAX_EVENT_SIZE		200
 
 class	EventHandler
 {
@@ -34,6 +33,7 @@ public:
 	void	enableWriteEvent(int fd);
 	void	disableWriteEvent(int fd);
 	void	setTimerEvent(int fd);
+	void	unsetTimerEvent(int fd);
 
 private:
 	EventHandler();
@@ -41,9 +41,11 @@ private:
 	std::vector<FDManager *>		fds;
 	std::vector<Server *>			servers;
 	std::map<int, PortManager *>	port_managers;
+	std::vector<struct kevent>		new_events;
 	int								kq;
 
-	const int	socket_timeout_in_second;
+	static const int	socket_timeout_in_second = 60;
+	static const int	new_event_reserve_size = 200;
 };
 
 #endif

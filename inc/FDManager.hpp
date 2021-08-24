@@ -12,7 +12,7 @@ public:
 
 	int				getFD()	{ return (fd); }
 
-	virtual void	readEvent(long read_size) = 0;
+	virtual void	readEvent(long read_size, short flags) = 0;
 	virtual void	writeEvent(long write_size) = 0;
 	virtual void	timerEvent() = 0;
 

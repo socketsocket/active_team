@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "Server.hpp"
 #include "EventHandlerInstance.hpp"
 
@@ -7,6 +9,11 @@ Server::Server()
 
 Server::~Server()
 {
+	for (	std::map<std::string, Location *>::iterator itr = locations.begin();
+			itr != locations.end();
+			++itr)
+		delete itr->second;
+	locations.clear();
 }
 
 //* ---------------------------------------- */
@@ -188,8 +195,8 @@ void
 	response.makeStartLine("HTTP/1.1", 200, this->statusMessage(200));
 	makeGeneralHeaders(dial);
 
-	Resource *resource = new Resource(fd, dial);
-	EventHandlerInstance::getInstance().enableReadEvent(resource->getFD());
+	dial->res.setResource(new Resource(fd, dial));
+	EventHandlerInstance::getInstance().enableReadEvent(fd);
 }
 
 
@@ -216,8 +223,8 @@ void
 	response.makeStartLine("HTTP/1.1", 201, this->statusMessage(201));
 	makeGeneralHeaders(dial);
 
-	Resource *resource = new Resource(fd, dial);
-	EventHandlerInstance::getInstance().enableWriteEvent(resource->getFD());
+	dial->res.setResource(new Resource(fd, dial));
+	EventHandlerInstance::getInstance().enableWriteEvent(fd);
 }
 
 void
@@ -510,7 +517,7 @@ std::string	Server::statusMessage(size_t code) {
 	}
 	if (status.count(code) == 0)
 	{
-		assert(true);
+		assert(false);
 		return "";
 	}
 	else

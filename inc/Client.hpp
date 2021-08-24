@@ -25,7 +25,7 @@ public:
 	Client(PortManager *pm);
 	virtual ~Client();
 
-	virtual void	readEvent(long read_size);
+	virtual void	readEvent(long read_size, short flags);
 	virtual void	writeEvent(long write_size);
 	virtual void	timerEvent();
 

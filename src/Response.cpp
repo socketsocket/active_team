@@ -1,15 +1,14 @@
 #include "Response.hpp"
 
 Response::Response()
-	: status_code(0),
+	: status_code(200),
 	  cgi(NULL),
 	  resource(NULL)
 {}
 
 Response::~Response()
 {
-	// DO NOT DELETE CGI; IT IS UP TO CGI_WRITE_EVENT
-	//delete cgi;
+	delete cgi;
 	// DO NOT DELETE RESOURCE; IT IS UP TO RESPONSE_WRITER
 	//delete resource;
 }

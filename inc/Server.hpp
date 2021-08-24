@@ -4,11 +4,15 @@
 # include <map>
 # include <string>
 
+# ifdef __APPLE__
+#  include <sys/event.h>
+# elif __linux__
+#  include <kqueue/sys/event.h>
+# endif
 # include <sys/stat.h>
 # include <dirent.h>
 # include <time.h>
 # include <fcntl.h>
-# include <sys/event.h>
 # include <unistd.h>
 
 class	Request;
@@ -31,6 +35,8 @@ public:
 
 	void		setBodyLimit(int limit);
 	void		setAutoindex(std::string on_off_string);
+	void		setReturnInfo(int code, std::string uri);
+
 
 	//make Response
 	void		makeErrorResponse(Dialogue *, Location *location, size_t);
@@ -51,7 +57,7 @@ public:
 	std::string					lastModifiedHeader();
 	std::string					connectionHeader(Request &req);
 	std::string					contentTypeHeader(std::string extension);
-	std::string					statusMessage(size_t code);
+	static std::string			statusMessage(size_t code);
 
 	//getter
 	Location					*getLocation(std::string uri);

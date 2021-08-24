@@ -2,6 +2,7 @@ webserv
 .DS_Store
 *\ *
 *.temp
+*.log
 .vscode
 
 # Prerequisites

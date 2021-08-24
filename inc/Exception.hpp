@@ -3,12 +3,19 @@
 
 # include <exception>
 # include <string>
+# include <cstring>
 # include <cerrno>
 
 class	SystemCallError : public std::exception
 {
 public:
-	SystemCallError(std::string function_name)	{ error_message = function_name + ": " + strerror(errno); }
+	SystemCallError(std::string function_name)
+	{
+		if (function_name != "read" && function_name != "write")
+			error_message = function_name + ": " + strerror(errno);
+		else
+			error_message = function_name;
+	}
 	virtual ~SystemCallError() throw()	{}
 
 	virtual const char	*what() const throw()

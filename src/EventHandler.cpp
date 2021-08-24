@@ -1,4 +1,8 @@
-#include <sys/event.h>	// kevent
+#ifdef __APPLE__
+# include <sys/event.h>	// kevent
+#elif __linux__
+# include <kqueue/sys/event.h>
+#endif
 
 #include <cstdlib>	// atoi
 
@@ -174,7 +178,7 @@ static void
 
 /* public */
 
-EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_second(60)
+EventHandler::EventHandler(std::string config_file_path)
 {
 	EventHandlerInstance::setInstance(this);
 
@@ -184,35 +188,46 @@ EventHandler::EventHandler(std::string config_file_path) : socket_timeout_in_sec
 	std::vector<int>			ports;
 	std::vector<std::string>	names;
 
-	for (std::string word; config_file >> word; )
+	try
 	{
-		tolower(word);
-
-		if (word[0] == '#')
-			std::getline(config_file, word);
-		else
-			config_queue.push(word);
-	}
-	while (config_queue.empty() == false)
-	{
-		if (config_queue.front() == "server")
+		for (std::string word; config_file >> word; )
 		{
-			config_queue.pop();
-			if (config_queue.front() != "{")
-				throw NoExpectedDirective("{");
+			tolower(word);
+
+			if (word[0] == '#')
+				std::getline(config_file, word);
 			else
+				config_queue.push(word);
+		}
+		while (config_queue.empty() == false)
+		{
+			if (config_queue.front() == "server")
 			{
 				config_queue.pop();
+				if (config_queue.front() != "{")
+					throw NoExpectedDirective("{");
+				else
+				{
+					config_queue.pop();
 
-				Server	*server = parseServer(config_queue, ports, names);
+					Server	*server = parseServer(config_queue, ports, names);
 
-				servers.push_back(server);
-				connectPortWithServer(port_managers, ports, names, server);
+					servers.push_back(server);
+					connectPortWithServer(port_managers, ports, names, server);
+				}
 			}
+			else
+				throw BadDirective(config_queue.front());
 		}
-		else
-			throw BadDirective(config_queue.front());
+		new_events.reserve(new_event_reserve_size);
 	}
+	catch (std::exception &e)
+	{
+		delete this;
+		std::cerr << e.what() << std::endl;
+		exit(1);
+	}
+	new_events.reserve(new_event_reserve_size);
 }
 
 EventHandler::~EventHandler()
@@ -227,10 +242,10 @@ EventHandler::~EventHandler()
 			++itr)
 		delete *itr;
 	servers.clear();
-	for (	std::map<int, PortManager *>::iterator itr = port_managers.begin();
-			itr != port_managers.end();
-			++itr)
-		delete itr->second;
+	// for (	std::map<int, PortManager *>::iterator itr = port_managers.begin();
+	// 		itr != port_managers.end();
+	// 		++itr)
+	// 	delete itr->second;
 	port_managers.clear();
 	close(kq);
 }
@@ -254,13 +269,14 @@ void
 	{
 		int	num_of_event;
 
-		if ((num_of_event = kevent(kq, NULL, 0, event_list, MAX_EVENT_SIZE, NULL)) == -1)
+		if ((num_of_event = kevent(kq, (new_events.empty() ? NULL : &new_events[0]), new_events.size(), event_list, MAX_EVENT_SIZE, NULL)) == -1)
 			throw SystemCallError("kevent");
+		new_events.clear();
+		new_events.reserve(new_event_reserve_size);
 
 		for (struct kevent *curr_event = event_list; curr_event < (event_list + num_of_event); ++curr_event)
 		{
 			if ((curr_event->flags & EV_ERROR)
-				|| (curr_event->flags & EV_EOF)
 				|| (fds[curr_event->ident] == NULL))
 			{
 				delete fds[curr_event->ident];
@@ -268,7 +284,7 @@ void
 			}
 
 			if (curr_event->filter == EVFILT_READ)
-				fds[curr_event->ident]->readEvent(curr_event->data);
+				fds[curr_event->ident]->readEvent(curr_event->data, curr_event->flags);
 			else if (curr_event->filter == EVFILT_WRITE)
 				fds[curr_event->ident]->writeEvent(curr_event->data);
 			else if (curr_event->filter == EVFILT_TIMER)
@@ -296,41 +312,40 @@ void
 void
 	EventHandler::enableReadEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw SystemCallError("kevent");
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 }
 
 void
 	EventHandler::enableWriteEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT | EV_ENABLE, 0, 0, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw SystemCallError("kevent");
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT | EV_ENABLE, 0, 0, NULL);
 }
 
 void
 	EventHandler::disableWriteEvent(int fd)
 {
-	struct kevent	temp;
-
-	EV_SET(&temp, fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw (SystemCallError("kevent"));
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 }
 
 void
 	EventHandler::setTimerEvent(int fd)
 {
-	struct kevent	temp;
+	new_events.resize(new_events.size() + 1);
+#ifdef __APPLE__
+	EV_SET(&new_events.back(), fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, socket_timeout_in_second, NULL);
+#elif __linux__
+	EV_SET(&new_events.back(), fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, socket_timeout_in_second * 1000, NULL);
+#endif
+}
 
-	EV_SET(&temp, fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, socket_timeout_in_second, NULL);
-	if (kevent(kq, &temp, 1, NULL, 0, NULL) == -1)
-		throw SystemCallError("kevent");
+void
+	EventHandler::unsetTimerEvent(int fd)
+{
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), fd, EVFILT_TIMER, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 }
 
 /* private */
