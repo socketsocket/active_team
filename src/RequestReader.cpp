@@ -123,6 +123,9 @@ void	RequestReader::makeReqHeader()
 		typedef std::map<std::string, std::string>::iterator	iterator;
 
 		iterator	iter;
+		iter = req.getHeaders().find("host");
+		if (iter == req.getHeaders().end())
+			throw BadRequest();
 
 		iter = req.getHeaders().find("transfer-encoding");
 		if (iter != req.getHeaders().end())
