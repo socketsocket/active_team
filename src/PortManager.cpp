@@ -42,7 +42,17 @@ PortManager::~PortManager()
 void
 	PortManager::addServer(std::string server_name, Server *server)
 {
-	servers.push_back(std::pair<std::string, Server*>(server_name, server));
+	if (server_name != "")
+	{
+		for (	std::vector<std::pair<std::string, Server *> >::iterator itr = servers.begin();
+				itr != servers.end();
+				++itr)
+		{
+			if (itr->first == server_name)
+				throw BadDirectiveValue("Same server name");
+		}
+	}
+	servers.push_back(std::make_pair(server_name, server));
 }
 
 void
