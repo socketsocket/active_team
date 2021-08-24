@@ -7,7 +7,8 @@
 
 ResponseWriter::ResponseWriter(int client_fd)
 	: client_fd(client_fd),
-	  last_communication(false)
+	  last_communication(false),
+	  is_chunked(false)
 {}
 
 ResponseWriter::~ResponseWriter()
@@ -16,8 +17,6 @@ ResponseWriter::~ResponseWriter()
 void
 	ResponseWriter::pushResponse(Response &res)
 {
-	// bool	is_chunked = false;
-
 	if (res.getHeaders().find("Connection")->second == "close")
 		last_communication = true;
 	buffer += res.getStartLine();
@@ -42,8 +41,8 @@ void
 		buffer += res.getBody();
 		delete resource;
 	}
-	// else // if (resource->getStatus() != Resource::DONE)
-	// 	is_chunked = true;
+	else // if (resource->getStatus() != Resource::DONE)
+		is_chunked = true;
 }
 
 bool
@@ -100,4 +99,10 @@ bool
 		EventHandlerInstance::getInstance().enableWriteEvent(client_fd);
 	}
 	return (false);
+}
+
+bool
+	ResponseWriter::isChunked()
+{
+	return (is_chunked);
 }
