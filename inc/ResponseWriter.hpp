@@ -20,6 +20,7 @@ public:
 	bool	emptyBuffer();
 	bool	writeChunkedResponse(long write_size);
 	bool	writeResponse(long write_size);
+	bool	isChunked();
 
 private:
 	ResponseWriter();
@@ -32,6 +33,7 @@ private:
 	CGI			*cgi;
 	Resource	*resource;
 	std::string	buffer;
+	bool		is_chunked;
 };
 
 #endif
