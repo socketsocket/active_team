@@ -62,7 +62,6 @@ public:
 	//getter
 	Location					*getLocation(std::string uri);
 	unsigned int				getBodyLimit();
-	size_t						getReturnCode();
 	std::map<int, std::string>	getErrorPages();
 
 private:
@@ -77,8 +76,6 @@ private:
 
 	bool								auto_index;
 	int									body_limit;
-	std::pair<int, std::string>			return_info;
-
 };
 
 #endif

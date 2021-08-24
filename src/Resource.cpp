@@ -29,6 +29,7 @@ void
 
 	buffer.resize(read_size);
 	read_bytes = read(getFD(), &buffer[0], read_size);
+	dialogue->res.setResource(this);
 
 	if (read_bytes == -1)
 		throw SystemCallError("read");

@@ -40,12 +40,6 @@ void
 }
 
 void
-	Server::setReturnInfo(int code, std::string uri)
-{
-	this->return_info = std::make_pair(code, uri);
-}
-
-void
 	Server::setAutoindex(std::string on_off_string)
 {
 	if (on_off_string == "on")
@@ -566,12 +560,6 @@ unsigned int
 	Server::getBodyLimit()
 {
 	return (body_limit);
-}
-
-size_t
-	Server::getReturnCode()
-{
-	return (return_info.first);
 }
 
 std::map<int, std::string>

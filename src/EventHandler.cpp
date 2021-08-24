@@ -110,7 +110,10 @@ static Server
 		}
 		else if (word == "server_name")
 		{
-			names.push_back(front_pop(config_queue));
+			if (config_queue.front() == ";")
+				names.push_back("");
+			else
+				names.push_back(front_pop(config_queue));
 		}
 		else if (word == "client_body_limit")
 		{
@@ -133,15 +136,6 @@ static Server
 			else
 				server->addLocation(location_path, parseLocation(config_queue));
 		}
-		else if (word == "return")
-		{
-			int	code = std::atoi(front_pop(config_queue).c_str());
-
-			if (config_queue.front() == ";")
-				server->setReturnInfo(code, "");
-			else
-				server->setReturnInfo(code, front_pop(config_queue));
-		}
 		else
 			throw BadDirective(word);
 
@@ -151,6 +145,8 @@ static Server
 
 	if (ports.size() == 0)
 		ports.push_back(80);
+	if (names.size() == 0)
+		throw NoExpectedDirective("server_name");
 	return (server);
 }
 

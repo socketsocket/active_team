@@ -1,8 +1,6 @@
 #ifndef FDManager_HPP
 # define FDManager_HPP
 
-# include <fcntl.h>
-
 # define READ_BUFFER_SIZE	65535
 # define WRITE_BUFFER_SIZE	65535
 

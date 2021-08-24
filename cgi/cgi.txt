@@ -1,1 +1,1 @@
-total=duration=10s
+hi hsonseyu
