@@ -24,7 +24,11 @@ void
 void
 	Response::addHeader(std::string key, std::string val)
 {
-	this->header.insert(make_pair(key, val));
+	std::pair<header_type::iterator, bool>	itr;
+
+	itr = this->header.insert(make_pair(key, val));
+	if (itr.second == false)
+		itr.first->second = val;
 }
 
 void
