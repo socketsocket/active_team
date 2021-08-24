@@ -3,6 +3,7 @@
 
 # include <exception>
 # include <string>
+# include <cstring>
 # include <cerrno>
 
 class	SystemCallError : public std::exception

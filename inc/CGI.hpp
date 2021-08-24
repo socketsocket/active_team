@@ -17,7 +17,7 @@ public:
 		CGIWriter(Dialogue *dialogue);
 		virtual ~CGIWriter();
 
-		virtual void	readEvent(long read_size);
+		virtual void	readEvent(long read_size, short flags);
 		virtual void	writeEvent(long write_size);
 		virtual void	timerEvent();
 
@@ -35,10 +35,12 @@ public:
 	class	CGIReader : public FDManager
 	{
 	public:
-		CGIReader(Dialogue *dialogue);
+		enum Status { HEADER, BODY, DONE };
+
+		CGIReader(Dialogue *dialogue, CGI *cgi);
 		virtual ~CGIReader();
 
-		virtual void	readEvent(long read_size);
+		virtual void	readEvent(long read_size, short flags);
 		virtual void	writeEvent(long write_size);
 		virtual void	timerEvent();
 
@@ -51,6 +53,11 @@ public:
 
 		Dialogue	*dialogue;
 		int			writable_pipe;
+		std::string	buffer;
+		CGI			*cgi;
+		Status		status;
+
+		static const ssize_t	MAX_OFFSET;
 	};
 
 	struct Query { std::string name; std::string value; };

@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <sys/event.h>
 
 #include "EventHandlerInstance.hpp"
 #include "Exception.hpp"
@@ -24,6 +25,7 @@ Client::Client(PortManager *pm)
 
 Client::~Client()
 {
+	EventHandlerInstance::getInstance().unsetTimerEvent(this->getFD());
 	while (dialogues.empty() == false)
 	{
 		delete dialogues.front();
@@ -32,8 +34,13 @@ Client::~Client()
 }
 
 void
-	Client::readEvent(long read_size)
+	Client::readEvent(long read_size, short flags)
 {
+	if (flags & EV_EOF)
+	{
+		delete this;
+		return ;
+	}
 	EventHandlerInstance::getInstance().setTimerEvent(this->getFD());
 	reader.readRequest(read_size);
 	for (Dialogue *pingpong = reader.parseRequest(); pingpong != NULL; pingpong = reader.parseRequest())
@@ -46,13 +53,12 @@ void
 void
 	Client::writeEvent(long write_size)
 {
-	if (dialogues.empty() == true)
-		throw UnexceptedEventOccured("Client write during empty response queue");
 	if (writer.emptyBuffer() == true)
 	{
+		if (dialogues.empty() == true)
+			throw UnexceptedEventOccured("Client write during empty response queue");
 		writer.pushResponse(dialogues.front()->res);
-		if (dialogues.front()->res.getCGI() == NULL)
-			delete dialogues.front();
+		delete dialogues.front();
 		dialogues.pop();
 	}
 	if (writer.writeResponse(write_size))
@@ -110,7 +116,7 @@ void
 	Location	*location = server->getLocation(dial->req.getUri().substr(0, dial->req.getUri().find("?")));
 
 	//maybe 400: Bad Request
-	if (dial->res.getStatusCode() != 0)
+	if (dial->res.getStatusCode() != 0 && dial->res.getStatusCode() != 200)
 		server->makeErrorResponse(dial, location, dial->res.getStatusCode());
 
 	else if (location == NULL)
@@ -162,7 +168,6 @@ void
 			try
 			{
 				res.setCGI(new CGI(*(cgi_path), resource_path, dial, pm->getPort()));
-				res.makeStartLine("HTTP/1.1", 200, server->statusMessage(200));
 			}
 			catch (BadRequest &e)
 			{
@@ -180,7 +185,6 @@ void
 			{
 				res.makeStartLine("HTTP/1.1", 409, server->statusMessage(409));
 			}
-			EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 		}
 		else
 		{

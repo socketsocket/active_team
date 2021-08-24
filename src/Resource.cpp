@@ -5,7 +5,7 @@
 #include "EventHandlerInstance.hpp"
 
 /* static */
-const long	Resource::MAX_OFFSET = 100000;
+const long	Resource::MAX_OFFSET = 8162;
 
 /* public */
 Resource::Resource(int fd, Dialogue *dialogue)
@@ -18,8 +18,9 @@ Resource::~Resource()
 {}
 
 void
-	Resource::readEvent(long read_size)
+	Resource::readEvent(long read_size, short flags)
 {
+	(void)flags;
 	read_size = std::min(MAX_OFFSET, read_size);
 
 	std::string	&body = dialogue->res.getBody();
@@ -38,7 +39,6 @@ void
 			body = buffer;
 			status = DONE;
 		}
-
 	}
 	else if (status == READING)
 	{

@@ -46,8 +46,9 @@ void
 }
 
 void
-	PortManager::readEvent(long read_size)
+	PortManager::readEvent(long read_size, short flags)
 {
+	(void)flags;
 	(void)read_size;
 	Client	*client = new Client(this);
 
