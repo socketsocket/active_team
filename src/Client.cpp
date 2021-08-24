@@ -168,19 +168,23 @@ void
 			}
 			catch (BadRequest &e)
 			{
-				res.makeStartLine("HTTP/1.1", 400, server->statusMessage(400));
+				server->makeErrorResponse(dial, location, 400);
+				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 			}
 			catch (Forbidden &e)
 			{
-				res.makeStartLine("HTTP/1.1", 403, server->statusMessage(403));
+				server->makeErrorResponse(dial, location, 403);
+				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 			}
 			catch (NotFound &e)
 			{
-				res.makeStartLine("HTTP/1.1", 404, server->statusMessage(404));
+				server->makeErrorResponse(dial, location, 404);
+				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 			}
 			catch (Conflict &e)
 			{
-				res.makeStartLine("HTTP/1.1", 409, server->statusMessage(409));
+				server->makeErrorResponse(dial, location, 409);
+				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 			}
 		}
 		else
@@ -191,7 +195,6 @@ void
 				server->makePOSTResponse(dial, location, resource_path);
 			else if (dial->req.getMethod() == Request::DELETE)
 				server->makeDELETEResponse(dial, location, resource_path);
-
 			if (dial->status == Dialogue::READY_TO_RESPONSE)
 				EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
 		}
