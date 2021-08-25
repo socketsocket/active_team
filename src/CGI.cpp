@@ -1,5 +1,9 @@
 #include <sys/socket.h>
-#include <sys/event.h>
+#ifdef __APPLE__
+# include <sys/event.h>
+#elif __linux__
+# include <kqueue/sys/event.h>
+#endif
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cassert>
@@ -242,6 +246,15 @@ static void
 		*itr = std::tolower(*itr);
 }
 
+static void
+	NLtoCRLF(std::string &buf)
+{
+	for (std::string::size_type itr = buf.find("\n"); itr != std::string::npos; itr = buf.find("\n", itr + 2))
+	{
+		buf.replace(itr, 1, "\r\n");
+	}
+}
+
 void
 	CGI::CGIReader::readEvent(long read_size, short flags)
 {
@@ -261,11 +274,11 @@ void
 
 	if (status == HEADER)
 	{
-		while ((newline_idx = buffer.find("\r\n")) != std::string::npos)
+		while ((newline_idx = buffer.find("\n")) != std::string::npos)
 		{
 			if (newline_idx == 0)
 			{
-				buffer.erase(0, 2);
+				buffer.erase(0, 1);
 				dialogue->res.makeStartLine("HTTP/1.1", dialogue->res.getStatusCode(), Server::statusMessage(dialogue->res.getStatusCode()));
 				dialogue->res.addHeader("Transfer-Encoding", "chunked");
 
@@ -290,7 +303,7 @@ void
 				break ;
 			}
 			std::string	line = buffer.substr(0, newline_idx);
-			buffer.erase(0, newline_idx + 2);
+			buffer.erase(0, newline_idx + 1);
 
 			std::string	key;
 			std::string	value;
@@ -316,6 +329,8 @@ void
 		{
 			std::stringstream	ss;
 			std::string			length_hex;
+
+			NLtoCRLF(buffer);
 
 			ss << std::hex << buffer.length();
 			ss >> length_hex;

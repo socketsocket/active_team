@@ -62,12 +62,21 @@ void
 	Resource::writeEvent(long write_size)
 {
 	std::string	&target = dialogue->req.getBody();
+
+	if (target.length() == 0)
+	{
+		target.clear();
+		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
+		status = DONE;
+		return ;
+	}
+
 	write_size = (target.length() < (size_t)write_size) ? target.length() : write_size;
 	ssize_t		write_bytes = write(getFD(), &target[0], write_size);
 
 	if (write_bytes == -1)
 		throw SystemCallError("write");
-	else if ((size_t)write_bytes == target.size())
+	else if ((size_t)write_bytes == target.length())
 	{
 		target.clear();
 		EventHandlerInstance::getInstance().enableWriteEvent(dialogue->client_fd);
