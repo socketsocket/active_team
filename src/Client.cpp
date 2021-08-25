@@ -155,7 +155,12 @@ void
 				struct stat buf;
 
 				if (stat(resource_path.c_str(), &buf) == -1)
-					return server->makeErrorResponse(dial, location, 404);
+				{
+					server->makeErrorResponse(dial, location, 404);
+					if (dial->status == Dialogue::READY_TO_RESPONSE)
+						EventHandlerInstance::getInstance().enableWriteEvent(this->getFD());
+					return ;
+				}
 			}
 			//add headers
 			Response &res = dial->res;

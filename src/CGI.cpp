@@ -170,6 +170,7 @@ CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogu
 	int	cgi_stdin = writer.getReadablePipe();
 	int	cgi_stdout = reader.getWritablePipe();
 
+	envp = new char *[32];
 	envp[0] = ft_strjoin("AUTH_TYPE=", "");
 	envp[1] = ft_strjoin("CONTENT_LENGTH=", findValue(dialogue->req.getHeaders(), "content-length").c_str());
 	envp[2] = ft_strjoin("AUTH_TYPE=", "");

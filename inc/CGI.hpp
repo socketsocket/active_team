@@ -81,7 +81,7 @@ private:
 	std::string	resource_path;
 	Dialogue	*dialogue;
 	int			server_port;
-	char		*envp[32];
+	char		**envp;
 };
 
 #endif

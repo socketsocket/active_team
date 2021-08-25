@@ -131,6 +131,7 @@ $(NAME):	$(DIR_OBJ) $(OBJS)
 	@$(CC) $(CFLAGS) -I$(DIR_INC) $(OBJS) $(CLIBFMW) -o $(NAME)
 	@$(ECHO)
 	@$(ECHO) "Usage: ./webserv [config file]"
+	@$(CC) cgi/reveal_cgi.cpp -o cgi/reveal_cgi.out
 
 bonus:	$(NAME)
 

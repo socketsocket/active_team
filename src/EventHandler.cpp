@@ -284,6 +284,7 @@ void
 				{
 					free(envp[i]);
 				}
+				delete envp;
 				continue ;
 			}
 
