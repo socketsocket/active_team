@@ -4,6 +4,7 @@
 #include "EventHandlerInstance.hpp"
 
 Server::Server()
+	: body_limit(102400)
 {
 }
 

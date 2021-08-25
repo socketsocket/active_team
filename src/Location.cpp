@@ -2,7 +2,8 @@
 #include "Exception.hpp"
 
 Location::Location()
-	: auto_index(false)
+	: auto_index(false),
+	  body_limit(102400)
 {}
 
 Location::~Location()
