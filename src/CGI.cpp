@@ -111,49 +111,6 @@ static char
 	return rtn;
 }
 
-// static void
-// 	setEnvironmentVariables(
-// 		char *envp[],
-// 		std::map<std::string, std::string> &req_header,
-// 		std::string &resource_path,
-// 		std::string &uri,
-// 		Dialogue *dialogue,
-// 		int server_port)
-// {
-// 	envp[0] = ft_strjoin("AUTH_TYPE=", "");
-// 	envp[1] = ft_strjoin("CONTENT_LENGTH=", findValue(req_header, "content-length").c_str());
-// 	envp[2] = ft_strjoin("AUTH_TYPE=", "");
-// 	envp[3] = ft_strjoin("CONTENT_LENGTH=", findValue(req_header, "content-length").c_str());
-// 	envp[4] = ft_strjoin("CONTENT_TYPE=", findValue(req_header, "content-type").c_str());
-// 	envp[5] = ft_strjoin("GATEWAY_INTERFACE=", "CGI/1.1");
-// 	envp[6] = ft_strjoin("HTTP_ACCEPT=", findValue(req_header, "accept").c_str());
-// 	envp[7] = ft_strjoin("HTTP_ACCEPT_CHARSET=", findValue(req_header, "accept-charset").c_str());
-// 	envp[8] = ft_strjoin("HTTP_ACCEPT_ENCODING=", findValue(req_header, "accept-encoding").c_str());
-// 	envp[9] = ft_strjoin("HTTP_ACCEPT_LANGUAGE=", findValue(req_header, "accept-language").c_str());
-// 	envp[10] = ft_strjoin("HTTP_CONNECTION=", findValue(req_header, "connection").c_str());
-// 	envp[11] = ft_strjoin("HTTP_COOKIE=", findValue(req_header, "cookie").c_str());
-// 	envp[12] = ft_strjoin("HTTP_FORWARDED=", findValue(req_header, "forwarded").c_str());
-// 	envp[13] = ft_strjoin("HTTP_HOST=", findValue(req_header, "host").c_str());
-// 	envp[14] = ft_strjoin("HTTP_PROXY_AUTHORIZATION=", findValue(req_header, "proxy-authorization").c_str());
-// 	envp[15] = ft_strjoin("HTTP_REFERER=", findValue(req_header, "referer").c_str());
-// 	envp[16] = ft_strjoin("HTTP_USER_AGENT=", findValue(req_header, "user-agent").c_str());
-// 	envp[17] = ft_strjoin("PATH_INFO=", getPathInfo(uri).c_str());
-// 	envp[18] = ft_strjoin("PATH_TRANSLATED=", resource_path.c_str());
-// 	envp[19] = ft_strjoin("QUERY_STRING=", getQueryString(uri).c_str());
-// 	envp[20] = ft_strjoin("REMOTE_ADDR=", getAddr(dialogue->client_fd).c_str());
-// 	envp[21] = ft_strjoin("REMOTE_HOST=", "");
-// 	envp[22] = ft_strjoin("REMOTE_IDENT=", "");
-// 	envp[23] = ft_strjoin("REMOTE_USER=", "");
-// 	envp[24] = ft_strjoin("REQUEST_METHOD=", getMethod(dialogue->req.getMethod()).c_str());
-// 	envp[25] = ft_strjoin("REQUEST_URI=", uri.c_str());
-// 	envp[26] = ft_strjoin("SCRIPT_NAME=", uri.substr(0, uri.find('?')).c_str());
-// 	envp[27] = ft_strjoin("SERVER_NAME=", req_header.find("host")->second.c_str());
-// 	envp[28] = ft_strjoin("SERVER_PORT=", std::to_string(server_port).c_str());
-// 	envp[29] = ft_strjoin("SERVER_PROTOCOL=", "HTTP/1.1");
-// 	envp[30] = ft_strjoin("SERVER_SOFTWARE=", "hsonseyu/1.1");
-// 	envp[31] = NULL;
-// }
-
 CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogue, int server_port)
 	: reader(dialogue, this),
 	  writer(dialogue),
@@ -204,7 +161,6 @@ CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogu
 	envp[30] = ft_strjoin("SERVER_SOFTWARE=", "hsonseyu/1.1");
 	envp[31] = NULL;
 
-	// setEnvironmentVariables(envp, dialogue->req.getHeaders(), resource_path, dialogue->req.getUri(), dialogue, server_port);
 	if ((script_pid = fork()) == -1)
 		throw SystemCallError("fork");
 	else if (script_pid == 0)
@@ -299,15 +255,6 @@ static void
 		*itr = std::tolower(*itr);
 }
 
-static void
-	NLtoCRLF(std::string &buf)
-{
-	for (std::string::size_type itr = buf.find("\n"); itr != std::string::npos; itr = buf.find("\n", itr + 2))
-	{
-		buf.replace(itr, 1, "\r\n");
-	}
-}
-
 void
 	CGI::CGIReader::readEvent(long read_size, short flags)
 {
@@ -327,11 +274,11 @@ void
 
 	if (status == HEADER)
 	{
-		while ((newline_idx = buffer.find("\n")) != std::string::npos)
+		while ((newline_idx = buffer.find("\r\n")) != std::string::npos)
 		{
 			if (newline_idx == 0)
 			{
-				buffer.erase(0, 1);
+				buffer.erase(0, 2);
 				dialogue->res.makeStartLine("HTTP/1.1", dialogue->res.getStatusCode(), Server::statusMessage(dialogue->res.getStatusCode()));
 				dialogue->res.addHeader("Transfer-Encoding", "chunked");
 
@@ -356,7 +303,7 @@ void
 				break ;
 			}
 			std::string	line = buffer.substr(0, newline_idx);
-			buffer.erase(0, newline_idx + 1);
+			buffer.erase(0, newline_idx + 2);
 
 			std::string	key;
 			std::string	value;
@@ -382,8 +329,6 @@ void
 		{
 			std::stringstream	ss;
 			std::string			length_hex;
-
-			NLtoCRLF(buffer);
 
 			ss << std::hex << buffer.length();
 			ss >> length_hex;

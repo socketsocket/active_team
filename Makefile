@@ -6,7 +6,7 @@
 #    By: seyu <seyu@student.42seoul.kr>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/10/10 23:07:12 by seheon            #+#    #+#              #
-#    Updated: 2021/08/25 13:49:15 by seyu             ###   ########.fr        #
+#    Updated: 2021/08/25 15:44:06 by seyu             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -132,6 +132,7 @@ $(NAME):	$(DIR_OBJ) $(OBJS)
 	@$(ECHO)
 	@$(ECHO) "Usage: ./webserv [config file]"
 	@$(CC) cgi/reveal_cgi.cpp -o cgi/reveal_cgi.out
+	@$(CC) www/bin/python.cpp -o www/bin/python.bin
 
 bonus:	$(NAME)
 
