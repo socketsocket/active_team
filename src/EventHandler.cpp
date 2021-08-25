@@ -276,6 +276,17 @@ void
 
 		for (struct kevent *curr_event = event_list; curr_event < (event_list + num_of_event); ++curr_event)
 		{
+			if (curr_event->udata != NULL)
+			{
+				char	**envp = static_cast<char **>(curr_event->udata);
+
+				for (size_t i = 0; envp[i] != NULL; ++i)
+				{
+					free(envp[i]);
+				}
+				continue ;
+			}
+
 			if ((curr_event->flags & EV_ERROR)
 				|| (fds[curr_event->ident] == NULL))
 			{
@@ -307,6 +318,13 @@ void
 	EventHandler::unregisterFD(FDManager *fdm)
 {
 	fds.at(fdm->getFD()) = NULL;
+}
+
+void
+	EventHandler::registerProcess(pid_t pid, char **envp)
+{
+	new_events.resize(new_events.size() + 1);
+	EV_SET(&new_events.back(), pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, envp);
 }
 
 void

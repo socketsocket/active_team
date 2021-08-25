@@ -98,44 +98,61 @@ static std::string
 	return (resource_path.substr(0, resource_path.find('?')));
 }
 
-static void
-	setEnvironmentVariables(
-		std::map<std::string, std::string> &req_header,
-		std::string &resource_path,
-		std::string &uri,
-		Dialogue *dialogue,
-		int server_port)
+static char
+	*ft_strjoin(const char *str1, const char *str2)
 {
-	setenv("AUTH_TYPE", "", 1);
-	setenv("CONTENT_LENGTH", findValue(req_header, "content-length").c_str(), 1);
-	setenv("CONTENT_TYPE", findValue(req_header, "content-type").c_str(), 1);
-	setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
-	setenv("HTTP_ACCEPT", findValue(req_header, "accept").c_str(), 1);
-	setenv("HTTP_ACCEPT_CHARSET", findValue(req_header, "accept-charset").c_str(), 1);
-	setenv("HTTP_ACCEPT_ENCODING", findValue(req_header, "accept-encoding").c_str(), 1);
-	setenv("HTTP_ACCEPT_LANGUAGE", findValue(req_header, "accept-language").c_str(), 1);
-	setenv("HTTP_CONNECTION", findValue(req_header, "connection").c_str(), 1);
-	setenv("HTTP_COOKIE", findValue(req_header, "cookie").c_str(), 1);
-	setenv("HTTP_FORWARDED", findValue(req_header, "forwarded").c_str(), 1);
-	setenv("HTTP_HOST", findValue(req_header, "host").c_str(), 1);
-	setenv("HTTP_PROXY_AUTHORIZATION", findValue(req_header, "proxy-authorization").c_str(), 1);
-	setenv("HTTP_REFERER", findValue(req_header, "referer").c_str(), 1);
-	setenv("HTTP_USER_AGENT", findValue(req_header, "user-agent").c_str(), 1);
-	setenv("PATH_INFO", getPathInfo(uri).c_str(), 1);
-	setenv("PATH_TRANSLATED", resource_path.c_str(), 1);
-	setenv("QUERY_STRING", getQueryString(uri).c_str(), 1);
-	setenv("REMOTE_ADDR", getAddr(dialogue->client_fd).c_str(), 1);
-	setenv("REMOTE_HOST", "", 1);
-	setenv("REMOTE_IDENT", "", 1);
-	setenv("REMOTE_USER", "", 1);
-	setenv("REQUEST_METHOD", getMethod(dialogue->req.getMethod()).c_str(), 1);
-	setenv("REQUEST_URI", uri.c_str(), 1);
-	setenv("SCRIPT_NAME", uri.substr(0, uri.find('?')).c_str(), 1);
-	setenv("SERVER_NAME", req_header.find("host")->second.c_str(), 1);
-	setenv("SERVER_PORT", std::to_string(server_port).c_str(), 1);
-	setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-	setenv("SERVER_SOFTWARE", "hsonseyu/1.1", 1);
+	size_t	strlen_str1 = strlen(str1);
+	size_t	strlen_str2 = strlen(str2);
+
+	char	*rtn = new char[strlen_str1 + strlen_str2 + 1];
+	strcpy(rtn, str1);
+	strcpy(rtn + strlen_str1, str2);
+	rtn[strlen_str1 + strlen_str2] = '\0';
+	return rtn;
 }
+
+// static void
+// 	setEnvironmentVariables(
+// 		char *envp[],
+// 		std::map<std::string, std::string> &req_header,
+// 		std::string &resource_path,
+// 		std::string &uri,
+// 		Dialogue *dialogue,
+// 		int server_port)
+// {
+// 	envp[0] = ft_strjoin("AUTH_TYPE=", "");
+// 	envp[1] = ft_strjoin("CONTENT_LENGTH=", findValue(req_header, "content-length").c_str());
+// 	envp[2] = ft_strjoin("AUTH_TYPE=", "");
+// 	envp[3] = ft_strjoin("CONTENT_LENGTH=", findValue(req_header, "content-length").c_str());
+// 	envp[4] = ft_strjoin("CONTENT_TYPE=", findValue(req_header, "content-type").c_str());
+// 	envp[5] = ft_strjoin("GATEWAY_INTERFACE=", "CGI/1.1");
+// 	envp[6] = ft_strjoin("HTTP_ACCEPT=", findValue(req_header, "accept").c_str());
+// 	envp[7] = ft_strjoin("HTTP_ACCEPT_CHARSET=", findValue(req_header, "accept-charset").c_str());
+// 	envp[8] = ft_strjoin("HTTP_ACCEPT_ENCODING=", findValue(req_header, "accept-encoding").c_str());
+// 	envp[9] = ft_strjoin("HTTP_ACCEPT_LANGUAGE=", findValue(req_header, "accept-language").c_str());
+// 	envp[10] = ft_strjoin("HTTP_CONNECTION=", findValue(req_header, "connection").c_str());
+// 	envp[11] = ft_strjoin("HTTP_COOKIE=", findValue(req_header, "cookie").c_str());
+// 	envp[12] = ft_strjoin("HTTP_FORWARDED=", findValue(req_header, "forwarded").c_str());
+// 	envp[13] = ft_strjoin("HTTP_HOST=", findValue(req_header, "host").c_str());
+// 	envp[14] = ft_strjoin("HTTP_PROXY_AUTHORIZATION=", findValue(req_header, "proxy-authorization").c_str());
+// 	envp[15] = ft_strjoin("HTTP_REFERER=", findValue(req_header, "referer").c_str());
+// 	envp[16] = ft_strjoin("HTTP_USER_AGENT=", findValue(req_header, "user-agent").c_str());
+// 	envp[17] = ft_strjoin("PATH_INFO=", getPathInfo(uri).c_str());
+// 	envp[18] = ft_strjoin("PATH_TRANSLATED=", resource_path.c_str());
+// 	envp[19] = ft_strjoin("QUERY_STRING=", getQueryString(uri).c_str());
+// 	envp[20] = ft_strjoin("REMOTE_ADDR=", getAddr(dialogue->client_fd).c_str());
+// 	envp[21] = ft_strjoin("REMOTE_HOST=", "");
+// 	envp[22] = ft_strjoin("REMOTE_IDENT=", "");
+// 	envp[23] = ft_strjoin("REMOTE_USER=", "");
+// 	envp[24] = ft_strjoin("REQUEST_METHOD=", getMethod(dialogue->req.getMethod()).c_str());
+// 	envp[25] = ft_strjoin("REQUEST_URI=", uri.c_str());
+// 	envp[26] = ft_strjoin("SCRIPT_NAME=", uri.substr(0, uri.find('?')).c_str());
+// 	envp[27] = ft_strjoin("SERVER_NAME=", req_header.find("host")->second.c_str());
+// 	envp[28] = ft_strjoin("SERVER_PORT=", std::to_string(server_port).c_str());
+// 	envp[29] = ft_strjoin("SERVER_PROTOCOL=", "HTTP/1.1");
+// 	envp[30] = ft_strjoin("SERVER_SOFTWARE=", "hsonseyu/1.1");
+// 	envp[31] = NULL;
+// }
 
 CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogue, int server_port)
 	: reader(dialogue, this),
@@ -153,11 +170,44 @@ CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogu
 	int	cgi_stdin = writer.getReadablePipe();
 	int	cgi_stdout = reader.getWritablePipe();
 
+	envp[0] = ft_strjoin("AUTH_TYPE=", "");
+	envp[1] = ft_strjoin("CONTENT_LENGTH=", findValue(dialogue->req.getHeaders(), "content-length").c_str());
+	envp[2] = ft_strjoin("AUTH_TYPE=", "");
+	envp[3] = ft_strjoin("CONTENT_LENGTH=", findValue(dialogue->req.getHeaders(), "content-length").c_str());
+	envp[4] = ft_strjoin("CONTENT_TYPE=", findValue(dialogue->req.getHeaders(), "content-type").c_str());
+	envp[5] = ft_strjoin("GATEWAY_INTERFACE=", "CGI/1.1");
+	envp[6] = ft_strjoin("HTTP_ACCEPT=", findValue(dialogue->req.getHeaders(), "accept").c_str());
+	envp[7] = ft_strjoin("HTTP_ACCEPT_CHARSET=", findValue(dialogue->req.getHeaders(), "accept-charset").c_str());
+	envp[8] = ft_strjoin("HTTP_ACCEPT_ENCODING=", findValue(dialogue->req.getHeaders(), "accept-encoding").c_str());
+	envp[9] = ft_strjoin("HTTP_ACCEPT_LANGUAGE=", findValue(dialogue->req.getHeaders(), "accept-language").c_str());
+	envp[10] = ft_strjoin("HTTP_CONNECTION=", findValue(dialogue->req.getHeaders(), "connection").c_str());
+	envp[11] = ft_strjoin("HTTP_COOKIE=", findValue(dialogue->req.getHeaders(), "cookie").c_str());
+	envp[12] = ft_strjoin("HTTP_FORWARDED=", findValue(dialogue->req.getHeaders(), "forwarded").c_str());
+	envp[13] = ft_strjoin("HTTP_HOST=", findValue(dialogue->req.getHeaders(), "host").c_str());
+	envp[14] = ft_strjoin("HTTP_PROXY_AUTHORIZATION=", findValue(dialogue->req.getHeaders(), "proxy-authorization").c_str());
+	envp[15] = ft_strjoin("HTTP_REFERER=", findValue(dialogue->req.getHeaders(), "referer").c_str());
+	envp[16] = ft_strjoin("HTTP_USER_AGENT=", findValue(dialogue->req.getHeaders(), "user-agent").c_str());
+	envp[17] = ft_strjoin("PATH_INFO=", getPathInfo(dialogue->req.getUri()).c_str());
+	envp[18] = ft_strjoin("PATH_TRANSLATED=", resource_path.c_str());
+	envp[19] = ft_strjoin("QUERY_STRING=", getQueryString(dialogue->req.getUri()).c_str());
+	envp[20] = ft_strjoin("REMOTE_ADDR=", getAddr(dialogue->client_fd).c_str());
+	envp[21] = ft_strjoin("REMOTE_HOST=", "");
+	envp[22] = ft_strjoin("REMOTE_IDENT=", "");
+	envp[23] = ft_strjoin("REMOTE_USER=", "");
+	envp[24] = ft_strjoin("REQUEST_METHOD=", getMethod(dialogue->req.getMethod()).c_str());
+	envp[25] = ft_strjoin("REQUEST_URI=", dialogue->req.getUri().c_str());
+	envp[26] = ft_strjoin("SCRIPT_NAME=", dialogue->req.getUri().substr(0, dialogue->req.getUri().find('?')).c_str());
+	envp[27] = ft_strjoin("SERVER_NAME=", dialogue->req.getHeaders().find("host")->second.c_str());
+	envp[28] = ft_strjoin("SERVER_PORT=", std::to_string(server_port).c_str());
+	envp[29] = ft_strjoin("SERVER_PROTOCOL=", "HTTP/1.1");
+	envp[30] = ft_strjoin("SERVER_SOFTWARE=", "hsonseyu/1.1");
+	envp[31] = NULL;
+
+	// setEnvironmentVariables(envp, dialogue->req.getHeaders(), resource_path, dialogue->req.getUri(), dialogue, server_port);
 	if ((script_pid = fork()) == -1)
 		throw SystemCallError("fork");
 	else if (script_pid == 0)
 	{
-		setEnvironmentVariables(dialogue->req.getHeaders(), resource_path, dialogue->req.getUri(), dialogue, server_port);
 		close(reader.getFD());
 		close(writer.getFD());
 		dup2(cgi_stdin, 0);
@@ -165,11 +215,13 @@ CGI::CGI(std::string &script_path, std::string &resource_path, Dialogue *dialogu
 		dup2(cgi_stdout, 1);
 		close(cgi_stdout);
 
-		if (execl(script_path.c_str(), script_path.c_str(), resource_path.c_str(), NULL) == -1)
+		if (execle(script_path.c_str(), script_path.c_str(), resource_path.c_str(), NULL, envp) == -1)
 			throw SystemCallError("execl");
 	}
 	else
 	{
+		EventHandlerInstance::getInstance().registerProcess(script_pid, envp);
+
 		close(cgi_stdin);
 		close(cgi_stdout);
 
