@@ -29,6 +29,8 @@ public:
 	void	registerFD(FDManager *fdm);
 	void	unregisterFD(FDManager *fdm);
 
+	void	registerProcess(pid_t pid, char **envp);
+
 	void	enableReadEvent(int fd);
 	void	enableWriteEvent(int fd);
 	void	disableWriteEvent(int fd);
